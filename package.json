@@ -6,6 +6,7 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "dev":"vite",
     "build": "vite build",
     "prepare": "pnpm build"
   },
