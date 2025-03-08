@@ -11,6 +11,14 @@
   },
   "author": "Jorge Hernandez",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jorgehn1995/lerniz-table.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Jorgehn1995/lerniz-table/issues"
+  },
+  "homepage": "https://github.com/Jorgehn1995/lerniz-table#readme",
   "peerDependencies": {
     "vue": "^3.0.0"
   },
