@@ -1,0 +1,23 @@
+{
+  "name": "lerniz-table",
+  "version": "1.0.0",
+  "description": "Componente tabla con la primera columna y primera fila fijadas reutilizable para Vue 3",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "vite build",
+    "prepare": "pnpm build"
+  },
+  "author": "Jorge Hernandez",
+  "license": "MIT",
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.1",
+    "vite-plugin-dts": "^4.5.3"
+  }
+}
