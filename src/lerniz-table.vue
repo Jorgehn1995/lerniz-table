@@ -225,9 +225,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="boxRef" class="classBigUniqueTableDFlex classBigUniqueTableFlexColumn" id="box">
+  <div ref="boxRef" class=" theme-lerniz-table classBigUniqueTableDFlex classBigUniqueTableFlexColumn" id="box">
     <!-- Toolbar superior -->
-    <div ref="toolbarTopRef" id="toolbar-top">
+    <div ref="toolbarTopRef" class="classBigUniqueTableTollbarTop" id="toolbar-top">
       <slot name="toolbar-top"></slot>
     </div>
 
@@ -305,6 +305,9 @@ onBeforeUnmount(() => {
   /* Fondo de error */
 }
 
+
+
+
 /* Spinner */
 .classBigUniqueTableSpinner {
   width: 32px;
@@ -324,6 +327,7 @@ onBeforeUnmount(() => {
 /* Clases utilitarias propias */
 .classBigUniqueTableDFlex {
   display: flex;
+  width: 100%;
 }
 
 .classBigUniqueTableJustifyCenter {
@@ -465,5 +469,27 @@ onBeforeUnmount(() => {
 .classBigUniqueTableBlankArea {
   width: 100%;
   background-color: transparent;
+}
+.classBigUniqueTableTollbarTop {
+  background-color: #344e41;
+  color: white;
+  padding: 8px;
+}
+
+.theme-lerniz-table th {
+  background-color: #3a5a40;
+  border-color: rgb(58, 88, 64);
+  ;
+}
+
+.theme-lerniz-table th:first-child {
+  background-color: #588157;
+}
+
+.theme-lerniz-table th:not(first-child) {
+  background-color: #3a5a40;
+  color: white;
+  padding: 2px 10px;
+  min-width: 40px;
 }
 </style>
