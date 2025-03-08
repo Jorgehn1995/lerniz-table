@@ -9,10 +9,10 @@ To activate keyboard navigation within inputs, each input must include `data-col
 ## 📸 Table Previews
 
 ### Desktop View
-![Lerniz Table Desktop](https://api.lerniz.com/storage/lerniz-table-desktop.png)
+<img src="https://api.lerniz.com/storage/lerniz-table-desktop.png" width="800px" alt="Lerniz Table Desktop">
 
 ### Mobile View
-![Lerniz Table Mobile](https://api.lerniz.com/storage/lerniz-table-mobile.png)
+<img src="https://api.lerniz.com/storage/lerniz-table-mobile.png" width="400px" alt="Lerniz Table Mobile">
 
 ---
 
