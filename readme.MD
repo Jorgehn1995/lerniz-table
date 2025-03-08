@@ -2,7 +2,17 @@
 
 ![Lerniz Table](https://img.shields.io/npm/v/lerniz-table.svg?style=flat-square)
 
-**Lerniz Table** is a reusable table component for Vue 3 that keeps the first row and first column fixed. Designed to facilitate data visualization in large tables.
+**Lerniz Table** is a reusable table component for Vue 3 that keeps the first row and first column fixed. Designed to facilitate data visualization in large tables. Additionally, it simulates Excel-like behavior, allowing navigation with arrow keys when `data-col` and `data-row` attributes are added to inputs inside the table.
+
+To activate keyboard navigation within inputs, each input must include `data-col` and `data-row` attributes, specifying the column and row it belongs to. This enables smooth movement using the arrow keys.
+
+## 📸 Table Previews
+
+### Desktop View
+![Lerniz Table Desktop](https://api.lerniz.com/storage/lerniz-table-desktop.png)
+
+### Mobile View
+![Lerniz Table Mobile](https://api.lerniz.com/storage/lerniz-table-mobile.png)
 
 ---
 
@@ -65,8 +75,8 @@ import { LernizTable } from 'lerniz-table';
     <template #rows>
       <tr>
         <td>Row 1</td>
-        <td>Data 1</td>
-        <td>Data 2</td>
+        <td><input type="text" data-col="1" data-row="1"></td>
+        <td><input type="text" data-col="2" data-row="1"></td>
       </tr>
     </template>
   </LernizTable>
