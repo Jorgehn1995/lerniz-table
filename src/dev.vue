@@ -10,9 +10,9 @@ import { LernizTable } from './index'; // Importa el componente directamente
     </template>
     <template #rows>
       <tr v-for="a, i in 30">
-        <td >1</td>
+        <td>{{ i + 1 }}</td>
         <td>John Doe</td>
-        <td v-for="r, i in 14">30</td>
+        <td v-for="r, x in 14">30</td>
       </tr>
     </template>
   </LernizTable>

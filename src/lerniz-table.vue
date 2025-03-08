@@ -232,40 +232,28 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- Contenedor principal de la tabla, con scroll y altura dinámica -->
-    <div
-      ref="tableWrapperRef"
-      class="classBigUniqueTableTableWrapper align-stretch classBigUniqueTableNiceScroll"
-      :style="{ height: tableHeight + 'px' }"
-      id="table"
-    >
+    <div ref="tableWrapperRef" class="classBigUniqueTableTableWrapper align-stretch classBigUniqueTableNiceScroll"
+      :style="{ height: tableHeight + 'px' }" id="table">
       <!-- Spinner o área en blanco si está cargando -->
-      <div
-        v-if="props.isLoadingTable"
-        style="height: 350px"
-        class="classBigUniqueTableDFlex classBigUniqueTableJustifyCenter classBigUniqueTableAlignCenter"
-      >
+      <div v-if="props.isLoadingTable" style="height: 350px"
+        class="classBigUniqueTableDFlex classBigUniqueTableJustifyCenter classBigUniqueTableAlignCenter">
         <div class="classBigUniqueTableSpinner"></div>
       </div>
 
       <!-- Contenido de la tabla real -->
       <div v-else :id="props.tableID">
         <!-- Si showTable es true, se muestra la tabla -->
-        <table
-          v-if="showTable"
-          class="classBigUniqueTableFixedTable"
+        <table v-if="showTable" class="classBigUniqueTableFixedTable"
           :class="{ 'classBigUniqueTableShadowRightCol': showShadowFirstColumnRight }"
-          :style="{ 'font-size': fontSize + 'rem' }"
-        >
+          :style="{ 'font-size': fontSize + 'rem' }">
           <thead :class="['classBigUniqueTableFixedThead', { 'classBigUniqueTableShadowUnder': showShadowThead }]">
             <tr>
               <!-- Primera celda sticky -->
-              <th
-                :class="{
-                  'classBigUniqueTableShadowFirstCellRight': showShadowFirstCellRight && !showShadowFirstCellBottom,
-                  'classBigUniqueTableShadowFirstCellBottom': showShadowFirstCellBottom && !showShadowFirstCellRight,
-                  'classBigUniqueTableShadowFirstCellAll': showShadowFirstCellBottom && showShadowFirstCellRight
-                }"
-              >
+              <th :class="{
+                'classBigUniqueTableShadowFirstCellRight': showShadowFirstCellRight && !showShadowFirstCellBottom,
+                'classBigUniqueTableShadowFirstCellBottom': showShadowFirstCellBottom && !showShadowFirstCellRight,
+                'classBigUniqueTableShadowFirstCellAll': showShadowFirstCellBottom && showShadowFirstCellRight
+              }">
                 <slot name="first-cell"></slot>
               </th>
               <slot name="columns"></slot>
@@ -278,11 +266,9 @@ onBeforeUnmount(() => {
         </table>
 
         <!-- Si showTable es false, mostramos un contenedor en blanco -->
-        <div
-          v-else
+        <div v-else
           class="classBigUniqueTableBlankArea classBigUniqueTableDFlex classBigUniqueTableJustifyCenter classBigUniqueTableAlignCenter"
-          style="width: 100%; background-color: transparent;"
-        >
+          style="width: 100%; background-color: transparent;">
           <slot name="blank"></slot>
         </div>
       </div>
@@ -296,32 +282,58 @@ onBeforeUnmount(() => {
 </template>
 
 <style>
+:root {
+  --excel-primary: rgb(168, 168, 168);
+  /* Azul clásico de Excel */
+  --excel-secondary: rgb(242, 242, 242);
+  /* Gris claro para fondo */
+  --excel-background: rgb(255, 255, 255);
+  /* Blanco */
+  --excel-border: rgb(198, 198, 198);
+  /* Bordes de celdas */
+  --excel-text: rgb(0, 0, 0);
+  /* Texto negro */
+  --excel-header-bg: rgb(214, 214, 214);
+  /* Azul claro para encabezados */
+  --excel-header-text: rgb(0, 32, 96);
+  /* Azul oscuro para encabezados */
+  --excel-hover: rgb(184, 204, 228);
+  /* Resaltado en hover */
+  --excel-error: rgb(255, 0, 0);
+  /* Rojo para errores */
+  --excel-error-bg: rgba(255, 0, 0, 0.1);
+  /* Fondo de error */
+}
+
 /* Spinner */
 .classBigUniqueTableSpinner {
   width: 32px;
   height: 32px;
-  border: 4px solid #ccc;
-  border-top: 4px solid rgba(0, 0, 0, 0.7);
+  border: 4px solid var(--excel-border);
+  border-top: 4px solid var(--excel-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
 
-/* Clases utilitarias propias (reemplazando d-flex, justify-center, etc.) */
+/* Clases utilitarias propias */
 .classBigUniqueTableDFlex {
   display: flex;
 }
+
 .classBigUniqueTableJustifyCenter {
   justify-content: center;
 }
+
 .classBigUniqueTableAlignCenter {
   align-items: center;
 }
-/* Ejemplo de adaptación si se quisiera flex-column */
+
 .classBigUniqueTableFlexColumn {
   flex-direction: column;
 }
@@ -330,13 +342,7 @@ onBeforeUnmount(() => {
 .classBigUniqueTableTableWrapper {
   overflow-x: auto;
   overflow-y: auto;
-  border-bottom: 1px solid rgb(var(--v-theme-secondary));
-}
-
-/* Clase de "scroll bonito" (antes nice-scroll).
-   Ajustar según estilos globales que tengas. */
-.classBigUniqueTableNiceScroll {
-  /* Aquí puedes añadir tus reglas de scroll personalizado si deseas */
+  border-bottom: 1px solid var(--excel-border);
 }
 
 /* Tabla con "border-spacing" para permitir sticky */
@@ -350,9 +356,24 @@ onBeforeUnmount(() => {
 .classBigUniqueTableFixedTable th,
 .classBigUniqueTableFixedTable td {
   text-align: left;
-  border: 1px solid rgba(var(--v-theme-muted), 0.15);
+  border: 1px solid var(--excel-border);
   height: 18px;
   position: relative;
+  color: var(--excel-text);
+}
+
+/* Estilos de cabecera */
+.classBigUniqueTableFixedTable th {
+  border: 1px solid var(--excel-primary);
+  font-size: 0.8em;
+  background-color: var(--excel-header-bg);
+  color: var(--excel-header-text);
+  z-index: 3;
+}
+
+.classBigUniqueTableFixedTable td {
+  font-size: 0.9em;
+  background-color: var(--excel-background);
 }
 
 /* Inputs internos */
@@ -361,29 +382,21 @@ onBeforeUnmount(() => {
   height: 100%;
   box-sizing: border-box;
   border: none;
-  outline-color: rgb(var(--v-theme-primary));
+  outline-color: var(--excel-primary);
   border-radius: 0px !important;
 }
 
-/* Para resaltar errores */
+/* Resaltar errores */
 .classBigUniqueTableInputError {
-  color: rgb(var(--v-theme-error));
+  color: var(--excel-error);
   font-weight: 500;
-  background-color: rgba(var(--v-theme-error), 0.09);
-  outline-color: rgb(var(--v-theme-error)) !important;
+  background-color: var(--excel-error-bg);
+  outline-color: var(--excel-error) !important;
 }
 
-/* Estilos de cabecera */
-.classBigUniqueTableFixedTable th {
-  border: 1px solid rgba(var(--v-theme-primary), 0.1);
-  font-size: 0.8em;
-  background-color: rgb(var(--v-theme-secondary));
-  color: rgb(var(--v-theme-primary));
-  z-index: 3;
-}
-
-.classBigUniqueTableFixedTable td {
-  font-size: 0.9em;
+/* Hover en las filas */
+.classBigUniqueTableFixedTable tr:hover {
+  background-color: var(--excel-hover);
 }
 
 /* Thead sticky */
@@ -399,7 +412,8 @@ onBeforeUnmount(() => {
   left: 0;
   z-index: 1;
   padding: 2px 8px;
-  background-color: rgb(var(--v-theme-background));
+  text-align: center;
+  background-color: var(--excel-background);
 }
 
 /* Sombra bajo la cabecera */
@@ -419,10 +433,10 @@ onBeforeUnmount(() => {
   left: 0;
   top: 0;
   z-index: 4;
-  min-width: 36px !important;
+  min-width: 30px !important;
   height: 67px !important;
   min-height: 67px !important;
-  background-color: rgb(var(--v-theme-secondary));
+  background-color: var(--excel-header-bg);
 }
 
 /* Sombras combinadas al cruzar scroll horizontal/vertical */
@@ -430,22 +444,24 @@ onBeforeUnmount(() => {
   box-shadow: 4px 0px 8px -2px rgba(0, 0, 0, 0.4);
   clip-path: inset(0px -8px 0px 0px);
 }
+
 .classBigUniqueTableShadowFirstCellBottom {
   box-shadow: 0px 4px 8px -2px rgba(0, 0, 0, 0.4);
   clip-path: inset(0px 0px -8px 0px);
 }
+
 .classBigUniqueTableShadowFirstCellAll {
   box-shadow: -4px 0px 8px -2px rgba(0, 0, 0, 0.4),
-              4px 0px 8px -2px rgba(0, 0, 0, 0.4);
+    4px 0px 8px -2px rgba(0, 0, 0, 0.4);
   clip-path: inset(0px -8px 0px -8px);
 }
 
-/* Ejemplo para la primera columna "name" */
+/* Estilo de la columna "Name" */
 .classBigUniqueTableName {
   min-width: 200px;
 }
 
-/* Área en blanco (antes blank-area) */
+/* Área en blanco */
 .classBigUniqueTableBlankArea {
   width: 100%;
   background-color: transparent;
