@@ -39,6 +39,7 @@ const windowHeight = ref(0)
 const boxTop = ref(0)
 const toolbarTopHeight = ref(0)
 const toolbarBottomHeight = ref(0)
+const firstColumnWidth = ref(40);
 
 /**
  * STICKY / SHADOWS
@@ -160,8 +161,6 @@ const handleKeyDown = (event: KeyboardEvent) => {
       nextRow = rowIndex > 0 ? (rowIndex - 1) : 0
       break
     case 'ArrowDown':
-
-
       nextRow = rowIndex < maxRow ? (rowIndex + 1) : maxRow
       break
     case 'ArrowLeft':
@@ -270,14 +269,15 @@ onBeforeUnmount(() => {
         <div v-if="!props.isBlankView">
           <!-- Encabezado "row" sticky -->
           <div class="divRow headerRow" :class="{
-            'withShadowUnder': showShadowThead,
+            'shadowFirstRow': showShadowThead,
           }" style="position: sticky; top: 0; z-index: 10;">
             <!-- Primera celda sticky (arriba-izquierda) -->
             <div class="divCell stickyCorner" :class="{
               'shadowFirstCellRight': showShadowFirstCellRight && !showShadowFirstCellBottom,
               'shadowFirstCellBottom': showShadowFirstCellBottom && !showShadowFirstCellRight,
               'shadowFirstCellAll': showShadowFirstCellBottom && showShadowFirstCellRight
-            }" style="position: sticky; left: 0; top: 0; z-index: 11; width: 20px;min-width: 20px;">
+            }" style="position: sticky; left: 0; top: 0; z-index: 11; "
+              :style="{ width: firstColumnWidth + 'px', minWidth: firstColumnWidth + 'px' }">
               <slot name="first-cell"></slot>
             </div>
 
@@ -299,8 +299,10 @@ onBeforeUnmount(() => {
             <div v-for="(item, localIndex) in visibleItems" :key="startIndex + localIndex" class="divRow"
               :style="{ height: props.itemHeight + 'px' }">
               <!-- Primera columna sticky -->
-              <div class="divCell stickyLeft"
-                style="position: sticky; left: 0; z-index: 9; width: 20px;min-width: 20px;">
+              <div class="divCell stickyLeft" :class="{
+                'shadownFirsColumn': showShadowFirstCellRight
+              }" style="position: sticky; left: 0; z-index: 9;"
+                :style="{ width: firstColumnWidth + 'px', minWidth: firstColumnWidth + 'px' }">
                 {{ (startIndex + localIndex) + 1 }}
               </div>
 
@@ -329,7 +331,7 @@ onBeforeUnmount(() => {
     </div>
   </div>
 </template>
-<style>
+<style scoped>
 /* Contenedor principal que “simula” tabla */
 .divTable {
   position: relative;
@@ -353,6 +355,9 @@ onBeforeUnmount(() => {
   overflow: hidden;
   /* si el contenido se pasa */
 }
+.divCell input{
+  height: 100%;
+}
 
 /* Sticky de la primera columna */
 .stickyLeft {
@@ -366,20 +371,32 @@ onBeforeUnmount(() => {
   /* Para tapar celdas al hacer scroll vertical */
 }
 
-/* Sombras si gustas (ejemplo) */
-.withShadowUnder {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+/* Sombra derecha en primera columna */
+.shadowFirstRow {
+  box-shadow: 0px 5px 8px -2px rgba(0, 0, 0, 0.4);
 }
 
+.shadownFirsColumn {
+  box-shadow: 4px 0px 8px -2px rgba(0, 0, 0, 0.4);
+  clip-path: inset(0px -8px 0px 0px);
+}
+
+
+/* Sombras combinadas al cruzar scroll horizontal/vertical */
 .shadowFirstCellRight {
-  box-shadow: inset -2px 0 2px -2px rgba(0, 0, 0, 0.3);
+  box-shadow: 4px 0px 8px -2px rgba(0, 0, 0, 0.4);
+  clip-path: inset(0px -8px 0px 0px);
 }
 
 .shadowFirstCellBottom {
-  box-shadow: inset 0 -2px 2px -2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0px 4px 8px -2px rgba(0, 0, 0, 0.4);
+  clip-path: inset(0px 0px -8px 0px);
 }
 
 .shadowFirstCellAll {
-  box-shadow: inset -2px -2px 3px -2px rgba(0, 0, 0, 0.3);
+  box-shadow: -4px 0px 8px -2px rgba(0, 0, 0, 0.4),
+    4px 0px 8px -2px rgba(0, 0, 0, 0.4);
+  clip-path: inset(0px -8px 0px -8px);
 }
 </style>
