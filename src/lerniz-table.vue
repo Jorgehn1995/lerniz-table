@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import type { Header } from "./types"
-import './style.css'
+
 
 /**
  * PROPS
@@ -250,13 +250,13 @@ onBeforeUnmount(() => {
 <template>
   <div ref="boxRef" class="lerniz-table classBigUniqueTableDFlex classBigUniqueTableFlexColumn" id="box">
     <!-- Toolbar superior -->
-    <div ref="toolbarTopRef" class="classBigUniqueTableTollbarTop" id="toolbar-top">
+    <div ref="toolbarTopRef" class="toolbar-top" id="toolbar-top">
       <slot name="toolbar-top"></slot>
     </div>
 
     <!-- Contenedor scroll principal -->
     <div ref="tableWrapperRef" class="classBigUniqueTableTableWrapper align-stretch classBigUniqueTableNiceScroll"
-      :style="{ height: tableHeight + 'px' }" id="table">
+      :style="{ height: tableHeight + 'px' }" id="table" style="overflow: scroll;">
       <!-- Spinner loading -->
       <div v-if="props.isLoading" style="height: 350px"
         class="classBigUniqueTableDFlex classBigUniqueTableJustifyCenter classBigUniqueTableAlignCenter">
@@ -338,6 +338,12 @@ onBeforeUnmount(() => {
   --lerniz-table-first-row: rgb(58, 90, 64);
   --lerniz-table-first-column: rgb(229, 229, 229);
   --lerniz-table-header-border: rgb(69, 101, 76);
+}
+
+.lerniz-table .toolbar-top{
+  background-color: #344e41;
+  color: white;
+  padding: 8px;
 }
 
 /* Contenedor principal que “simula” tabla */
