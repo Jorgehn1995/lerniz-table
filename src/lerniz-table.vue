@@ -248,30 +248,24 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="boxRef" class="lerniz-table classBigUniqueTableDFlex classBigUniqueTableFlexColumn" id="box">
+  <div ref="boxRef" class="lerniz-table" id="box">
     <!-- Toolbar superior -->
     <div ref="toolbarTopRef" class="toolbar-top" id="toolbar-top">
       <slot name="toolbar-top"></slot>
     </div>
 
     <!-- Contenedor scroll principal -->
-    <div ref="tableWrapperRef" class="classBigUniqueTableTableWrapper align-stretch classBigUniqueTableNiceScroll"
-      :style="{ height: tableHeight + 'px' }" id="table" style="overflow: scroll;">
+    <div ref="tableWrapperRef" class="tableWrapper" :style="{ height: tableHeight + 'px' }" id="table">
       <!-- Spinner loading -->
-      <div v-if="props.isLoading" style="height: 350px"
-        class="classBigUniqueTableDFlex classBigUniqueTableJustifyCenter classBigUniqueTableAlignCenter">
-        <div class="classBigUniqueTableSpinner"></div>
+      <div v-if="props.isLoading" style="height: 350px" class="loading-container">
+        <div class="spinner"></div>
       </div>
 
       <!-- Contenido principal -->
       <div v-else :id="props.tableID" class="divTable" :style="{ 'font-size': fontSize + 'rem' }">
-        <!-- Si no está en blankView, pintamos "div" table -->
         <div v-if="!props.isBlankView">
-          <!-- Encabezado "row" sticky -->
-          <div class="divRow headerRow" :class="{
-            'shadowFirstRow': showShadowThead,
-          }" style="position: sticky; top: 0; z-index: 10;">
-            <!-- Primera celda sticky (arriba-izquierda) -->
+          <!-- Encabezado -->
+          <div class="divRow headerRow" :class="{ 'shadowFirstRow': showShadowThead }" style="position: sticky; top: 0; z-index: 10;">
             <div class="firstCell" :class="{
               'shadowFirstCellRight': showShadowFirstCellRight && !showShadowFirstCellBottom,
               'shadowFirstCellBottom': showShadowFirstCellBottom && !showShadowFirstCellRight,
@@ -280,33 +274,26 @@ onBeforeUnmount(() => {
               :style="{ width: firstColumnWidth + 'px', minWidth: firstColumnWidth + 'px' }">
               <slot name="first-cell"></slot>
             </div>
-
-            <!-- Resto de celdas de cabecera -->
-            <div v-for="(header, index) in props.headers" :key="`head-${index}-${header.field}`"
-              class="headerCell" :style="{ width: header.width + 'px', minWidth: header.width + 'px' }">
+            <div v-for="(header, index) in props.headers" :key="`head-${index}-${header.field}`" class="headerCell"
+              :style="{ width: header.width + 'px', minWidth: header.width + 'px' }">
               <slot name="header" :header="header">
                 {{ header.text }}
               </slot>
             </div>
           </div>
 
-          <!-- Body con virtualización -->
+          <!-- Body -->
           <div class="divBody" :style="{
             'padding-top': (startIndex * props.itemHeight) + 'px',
             'padding-bottom': ((totalRows - endIndex) * props.itemHeight) + 'px',
           }">
-            <!-- Renderizamos solo las filas visibles -->
             <div v-for="(item, localIndex) in visibleItems" :key="startIndex + localIndex" class="divRow"
               :style="{ height: props.itemHeight + 'px' }">
-              <!-- Primera columna sticky -->
-              <div class="divCell stickyLeft" :class="{
-                'shadownFirsColumn': showShadowFirstCellRight
-              }" style="position: sticky; left: 0; z-index: 9;"
+              <div class="divCell stickyLeft" :class="{ 'shadowFirstColumn': showShadowFirstCellRight }"
+                style="position: sticky; left: 0; z-index: 9;"
                 :style="{ width: firstColumnWidth + 'px', minWidth: firstColumnWidth + 'px' }">
                 {{ (startIndex + localIndex) + 1 }}
               </div>
-
-              <!-- Celdas data -->
               <div v-for="(colum, colIndex) in props.headers" :key="colIndex" class="divCell"
                 :style="{ width: colum.width + 'px', minWidth: colum.width + 'px' }">
                 <input :data-row="startIndex + localIndex" :data-col="colIndex" :type="colum.type"
@@ -314,13 +301,6 @@ onBeforeUnmount(() => {
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Blank View -->
-        <div v-else
-          class="classBigUniqueTableBlankArea classBigUniqueTableDFlex classBigUniqueTableJustifyCenter classBigUniqueTableAlignCenter"
-          style="width: 100%; background-color: transparent;">
-          <slot name="blank"></slot>
         </div>
       </div>
     </div>
@@ -331,29 +311,27 @@ onBeforeUnmount(() => {
     </div>
   </div>
 </template>
+
 <style scoped>
 .lerniz-table {
   --lerniz-table-toolbar: rgb(52, 78, 65);
   --lerniz-table-first-cell: rgb(88, 129, 87);
   --lerniz-table-first-row: rgb(58, 90, 64);
-  --lerniz-table-first-column: rgb(229, 229, 229);
   --lerniz-table-header-border: rgb(69, 101, 76);
 }
 
-.lerniz-table .toolbar-top{
-  background-color: #344e41;
+.lerniz-table .toolbar-top {
+  background-color: var(--lerniz-table-toolbar);
   color: white;
   padding: 8px;
 }
 
-/* Contenedor principal que “simula” tabla */
 .lerniz-table .divTable {
   position: relative;
   width: 100%;
   box-sizing: border-box;
 }
 
-/* Cada “fila” */
 .lerniz-table .divRow {
   display: flex;
   flex-direction: row;
@@ -361,65 +339,43 @@ onBeforeUnmount(() => {
   box-sizing: border-box;
 }
 
-/* Primera ceda */
 .lerniz-table .firstCell {
   background-color: var(--lerniz-table-first-cell);
-  border-color: 1px solid var(--lerniz-table-header-border);
+  border: 1px solid var(--lerniz-table-header-border);
 }
 
-
-.lerniz-table .headerCell{
+.lerniz-table .headerCell {
   background-color: var(--lerniz-table-first-row);
-  border-color: 1px solid var(--lerniz-table-header-border);
+  border: 1px solid var(--lerniz-table-header-border);
   color: white;
   padding: 2px;
 }
 
-/* Cada “celda” */
 .lerniz-table .divCell {
   box-sizing: border-box;
   border: 1px solid #ddd;
-  /* vertical-align: middle;  si quieres centrar inline */
   overflow: hidden;
-  /* si el contenido se pasa */
 }
-
-
-
-
 
 .divCell input {
   height: 100%;
   border: 0px;
 }
 
-/* Sticky de la primera columna */
 .stickyLeft {
   background: white;
   text-align: center;
-  /* Para tapar el contenido detrás en scroll horizontal */
 }
 
-/* Sticky de la cabecera */
 .headerRow {
   background: white;
   min-height: 40px;
-  /* Para tapar celdas al hacer scroll vertical */
 }
 
-
-/* Sombra derecha en primera columna */
 .shadowFirstRow {
   box-shadow: 0px 5px 8px -2px rgba(0, 0, 0, 0.4);
 }
 
-.shadownFirsColumn {
-  box-shadow: 4px 0px 8px -2px rgba(0, 0, 0, 0.4);
-  clip-path: inset(0px -8px 0px 0px);
-}
-
-
-/* Sombras combinadas al cruzar scroll horizontal/vertical */
 .shadowFirstCellRight {
   box-shadow: 4px 0px 8px -2px rgba(0, 0, 0, 0.4);
   clip-path: inset(0px -8px 0px 0px);
@@ -431,8 +387,7 @@ onBeforeUnmount(() => {
 }
 
 .shadowFirstCellAll {
-  box-shadow: -4px 0px 8px -2px rgba(0, 0, 0, 0.4),
-    4px 0px 8px -2px rgba(0, 0, 0, 0.4);
+  box-shadow: -4px 0px 8px -2px rgba(0, 0, 0, 0.4), 4px 0px 8px -2px rgba(0, 0, 0, 0.4);
   clip-path: inset(0px -8px 0px -8px);
 }
 </style>
