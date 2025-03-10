@@ -255,71 +255,73 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- Contenedor scroll principal -->
-    <div ref="tableWrapperRef" :style="{ height: tableHeight + 'px' }" id="table"
-      style="overflow: scroll;">
+    <div ref="tableWrapperRef" :style="{ height: tableHeight + 'px' }" id="table" style="overflow: scroll;">
       <!-- Spinner loading -->
       <div v-if="props.isLoading" style="height: 350px">
-        
+
       </div>
-
-      <!-- Contenido principal -->
-      <div v-else :id="props.tableID" class="divTable" :style="{ 'font-size': fontSize + 'rem' }">
-        <!-- Si no está en blankView, pintamos "div" table -->
-        <div v-if="!props.isBlankView">
-          <!-- Encabezado "row" sticky -->
-          <div class="divRow headerRow" :class="{
-            'shadowFirstRow': showShadowThead,
-          }" style="position: sticky; top: 0; z-index: 10;">
-            <!-- Primera celda sticky (arriba-izquierda) -->
-            <div class="firstCell" :class="{
-              'shadowFirstCellRight': showShadowFirstCellRight && !showShadowFirstCellBottom,
-              'shadowFirstCellBottom': showShadowFirstCellBottom && !showShadowFirstCellRight,
-              'shadowFirstCellAll': showShadowFirstCellBottom && showShadowFirstCellRight
-            }" style="position: sticky; left: 0; top: 0; z-index: 11; "
-              :style="{ width: firstColumnWidth + 'px', minWidth: firstColumnWidth + 'px' }">
-              <slot name="first-cell"></slot>
-            </div>
-
-            <!-- Resto de celdas de cabecera -->
-            <div v-for="(header, index) in props.headers" :key="`head-${index}-${header.field}`" class="headerCell"
-              :style="{ width: header.width + 'px', minWidth: header.width + 'px' }">
-              <slot name="header" :header="header">
-                {{ header.text }}
-              </slot>
-            </div>
-          </div>
-
-          <!-- Body con virtualización -->
-          <div class="divBody" :style="{
-            'padding-top': (startIndex * props.itemHeight) + 'px',
-            'padding-bottom': ((totalRows - endIndex) * props.itemHeight) + 'px',
-          }">
-            <!-- Renderizamos solo las filas visibles -->
-            <div v-for="(item, localIndex) in visibleItems" :key="startIndex + localIndex" class="divRow"
-              :style="{ height: props.itemHeight + 'px' }">
-              <!-- Primera columna sticky -->
-              <div class="divCell stickyLeft" :class="{
-                'shadownFirsColumn': showShadowFirstCellRight
-              }" style="position: sticky; left: 0; z-index: 9;"
+      <div v-else>
+        <!-- Contenido principal -->
+        <div :id="props.tableID" class="divTable" :style="{ 'font-size': fontSize + 'rem' }">
+          <!-- Si no está en blankView, pintamos "div" table -->
+          <div v-if="!props.isBlankView">
+            <!-- Encabezado "row" sticky -->
+            <div class="divRow headerRow" :class="{
+              'shadowFirstRow': showShadowThead,
+            }" style="position: sticky; top: 0; z-index: 10;">
+              <!-- Primera celda sticky (arriba-izquierda) -->
+              <div class="firstCell" :class="{
+                'shadowFirstCellRight': showShadowFirstCellRight && !showShadowFirstCellBottom,
+                'shadowFirstCellBottom': showShadowFirstCellBottom && !showShadowFirstCellRight,
+                'shadowFirstCellAll': showShadowFirstCellBottom && showShadowFirstCellRight
+              }" style="position: sticky; left: 0; top: 0; z-index: 11; "
                 :style="{ width: firstColumnWidth + 'px', minWidth: firstColumnWidth + 'px' }">
-                {{ (startIndex + localIndex) + 1 }}
+                <slot name="first-cell"></slot>
               </div>
 
-              <!-- Celdas data -->
-              <div v-for="(colum, colIndex) in props.headers" :key="colIndex" class="divCell"
-                :style="{ width: colum.width + 'px', minWidth: colum.width + 'px' }">
-                <input :data-row="startIndex + localIndex" :data-col="colIndex" :type="colum.type"
-                  :value="item[colum.field]" />
+              <!-- Resto de celdas de cabecera -->
+              <div v-for="(header, index) in props.headers" :key="`head-${index}-${header.field}`" class="headerCell"
+                :style="{ width: header.width + 'px', minWidth: header.width + 'px' }">
+                <slot name="header" :header="header">
+                  {{ header.text }}
+                </slot>
+              </div>
+            </div>
+
+            <!-- Body con virtualización -->
+            <div class="divBody" :style="{
+              'padding-top': (startIndex * props.itemHeight) + 'px',
+              'padding-bottom': ((totalRows - endIndex) * props.itemHeight) + 'px',
+            }">
+              <!-- Renderizamos solo las filas visibles -->
+              <div v-for="(item, localIndex) in visibleItems" :key="startIndex + localIndex" class="divRow"
+                :style="{ height: props.itemHeight + 'px' }">
+                <!-- Primera columna sticky -->
+                <div class="divCell stickyLeft" :class="{
+                  'shadownFirsColumn': showShadowFirstCellRight
+                }" style="position: sticky; left: 0; z-index: 9;"
+                  :style="{ width: firstColumnWidth + 'px', minWidth: firstColumnWidth + 'px' }">
+                  {{ (startIndex + localIndex) + 1 }}
+                </div>
+
+                <!-- Celdas data -->
+                <div v-for="(colum, colIndex) in props.headers" :key="colIndex" class="divCell"
+                  :style="{ width: colum.width + 'px', minWidth: colum.width + 'px' }">
+                  <input :data-row="startIndex + localIndex" :data-col="colIndex" :type="colum.type"
+                    :value="item[colum.field]" />
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Blank View -->
-        <div v-else style="width: 100%; background-color: transparent;">
-          <slot name="blank"></slot>
+          <!-- Blank View -->
+          <div v-else style="width: 100%; background-color: transparent;">
+            <slot name="blank"></slot>
+          </div>
         </div>
       </div>
+
+
     </div>
 
     <!-- Toolbar inferior -->
