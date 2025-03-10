@@ -1,0 +1,213 @@
+
+
+:root {
+  --excel-primary: rgb(168, 168, 168);
+  /* Azul clásico de Excel */
+  --excel-secondary: rgb(242, 242, 242);
+  /* Gris claro para fondo */
+  --excel-background: rgb(255, 255, 255);
+  /* Blanco */
+  --excel-border: rgb(198, 198, 198);
+  /* Bordes de celdas */
+  --excel-text: rgb(0, 0, 0);
+  /* Texto negro */
+  --excel-header-bg: rgb(214, 214, 214);
+  /* Azul claro para encabezados */
+  --excel-header-text: rgb(0, 32, 96);
+  /* Azul oscuro para encabezados */
+  --excel-hover: rgb(184, 204, 228);
+  /* Resaltado en hover */
+  --excel-error: rgb(255, 0, 0);
+  /* Rojo para errores */
+  --excel-error-bg: rgba(255, 0, 0, 0.1);
+  /* Fondo de error */
+}
+
+
+
+
+/* Spinner */
+.classBigUniqueTableSpinner {
+  width: 32px;
+  height: 32px;
+  border: 4px solid var(--excel-border);
+  border-top: 4px solid var(--excel-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Clases utilitarias propias */
+.classBigUniqueTableDFlex {
+  display: flex;
+  width: 100%;
+}
+
+.classBigUniqueTableJustifyCenter {
+  justify-content: center;
+}
+
+.classBigUniqueTableAlignCenter {
+  align-items: center;
+}
+
+.classBigUniqueTableFlexColumn {
+  flex-direction: column;
+}
+
+/* Scrollable contenedor principal */
+.classBigUniqueTableTableWrapper {
+  overflow-x: auto;
+  overflow-y: auto;
+  border-bottom: 1px solid var(--excel-border);
+}
+
+/* Tabla con "border-spacing" para permitir sticky */
+.classBigUniqueTableFixedTable {
+  width: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Celdas y cabeceras */
+.classBigUniqueTableFixedTable th,
+.classBigUniqueTableFixedTable td {
+  text-align: left;
+  border: 1px solid var(--excel-border);
+  height: 18px;
+  position: relative;
+  color: var(--excel-text);
+}
+
+/* Estilos de cabecera */
+.classBigUniqueTableFixedTable th {
+  border: 1px solid var(--excel-primary);
+  font-size: 0.8em;
+  background-color: var(--excel-header-bg);
+  color: var(--excel-header-text);
+  z-index: 3;
+}
+
+.classBigUniqueTableFixedTable td {
+  font-size: 0.9em;
+  background-color: var(--excel-background);
+}
+
+/* Inputs internos */
+.classBigUniqueTableFixedTable td input {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  border: none;
+  outline-color: var(--excel-primary);
+  border-radius: 0px !important;
+}
+
+/* Resaltar errores */
+.classBigUniqueTableInputError {
+  color: var(--excel-error);
+  font-weight: 500;
+  background-color: var(--excel-error-bg);
+  outline-color: var(--excel-error) !important;
+}
+
+/* Hover en las filas */
+.classBigUniqueTableFixedTable tr:hover {
+  background-color: var(--excel-hover);
+}
+
+/* Thead sticky */
+.classBigUniqueTableFixedThead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* Primera columna sticky */
+.classBigUniqueTableFixedColumn td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  padding: 2px 8px;
+  text-align: center;
+  background-color: var(--excel-background);
+}
+
+/* Sombra bajo la cabecera */
+.classBigUniqueTableShadowUnder {
+  box-shadow: 0px 5px 8px -2px rgba(0, 0, 0, 0.4);
+}
+
+/* Sombra derecha en primera columna */
+.classBigUniqueTableShadowRightCol .classBigUniqueTableFixedColumn td:first-child {
+  box-shadow: 4px 0px 8px -2px rgba(0, 0, 0, 0.4);
+  clip-path: inset(0px -8px 0px 0px);
+}
+
+/* Ajuste para la primera celda <th> sticky */
+.classBigUniqueTableFixedThead th:first-child {
+  position: sticky;
+  left: 0;
+  top: 0;
+  z-index: 4;
+  min-width: 30px !important;
+  height: 67px !important;
+  min-height: 67px !important;
+  background-color: var(--excel-header-bg);
+}
+
+/* Sombras combinadas al cruzar scroll horizontal/vertical */
+.classBigUniqueTableShadowFirstCellRight {
+  box-shadow: 4px 0px 8px -2px rgba(0, 0, 0, 0.4);
+  clip-path: inset(0px -8px 0px 0px);
+}
+
+.classBigUniqueTableShadowFirstCellBottom {
+  box-shadow: 0px 4px 8px -2px rgba(0, 0, 0, 0.4);
+  clip-path: inset(0px 0px -8px 0px);
+}
+
+.classBigUniqueTableShadowFirstCellAll {
+  box-shadow: -4px 0px 8px -2px rgba(0, 0, 0, 0.4),
+    4px 0px 8px -2px rgba(0, 0, 0, 0.4);
+  clip-path: inset(0px -8px 0px -8px);
+}
+
+/* Estilo de la columna "Name" */
+.classBigUniqueTableName {
+  min-width: 200px;
+}
+
+/* Área en blanco */
+.classBigUniqueTableBlankArea {
+  width: 100%;
+  background-color: transparent;
+}
+.classBigUniqueTableTollbarTop {
+  background-color: #344e41;
+  color: white;
+  padding: 8px;
+}
+
+.theme-lerniz-table th {
+  background-color: #3a5a40;
+  border-color: rgb(58, 88, 64);
+  ;
+}
+
+.theme-lerniz-table th:first-child {
+  background-color: #588157;
+}
+
+.theme-lerniz-table th:not(first-child) {
+  background-color: #3a5a40;
+  color: white;
+  padding: 2px 10px;
+  min-width: 40px;
+}
+

@@ -1,32 +1,22 @@
 <script setup>
-import { LernizTable } from './index'; // Importa el componente directamente
+import { onMounted, ref } from 'vue';
+import { LernizTable } from './index';
+import { items, headers } from "./items.ts"
+
+
 </script>
 
 <template>
-  <LernizTable :isLoadingTable="false" :tableID="'test-table'" :zoom="100" :showTable="true">
+  <LernizTable :items="items" :headers="headers">
     <template #toolbar-top>
       <button class="button-2">
         Crear
       </button>
     </template>
-    <template #columns>
-      <th v-for="n, i in 15">Name</th>
 
-    </template>
-    <template #rows>
-      <tr v-for="a, i in 30">
-        <td>{{ i + 1 }}</td>
-        <td>John Doe</td>
-        <td v-for="r, x in 14">
-          <input :data-row="i" :data-col="x" type="text">
-        </td>
-      </tr>
-    </template>
   </LernizTable>
 </template>
 <style>
-
-
 /* CSS */
 .button-2 {
   background-color: #a3b18a;
@@ -50,5 +40,4 @@ import { LernizTable } from './index'; // Importa el componente directamente
   -webkit-user-select: none;
   touch-action: manipulation;
 }
-
 </style>

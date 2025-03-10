@@ -1,31 +1,31 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount, defineProps, type PropType } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import type { Header } from "./types"
+import './style.css'
 
 /**
  * PROPS
  */
-const props = defineProps({
-  isLoadingTable: Boolean,
-  tableID: {
-    type: String as PropType<string>,
-    default: 'table',
-  },
-  zoom: {
-    type: [Number, String] as PropType<number | string>,
-    default: 100,
-  },
-  height: {
-    type: Number,
-    default: 0,
-  },
-  showTable: {
-    type: Boolean,
-    default: true,
-  },
+const props = withDefaults(defineProps<{
+  isLoading?: boolean
+  tableID?: string
+  zoom?: number | string
+  height?: number
+  itemHeight?: number
+  isBlankView?: boolean
+  items: any[]
+  headers: Header[]
+}>(), {
+  isLoading: false,
+  tableID: 'divTable',
+  zoom: 100,
+  height: 0,
+  itemHeight: 25,
+  isBlankView: false,
 })
 
 /**
- * REFERENCIAS A ELEMENTOS DEL DOM
+ * REFERENCIAS
  */
 const boxRef = ref<HTMLElement | null>(null)
 const toolbarTopRef = ref<HTMLElement | null>(null)
@@ -41,7 +41,7 @@ const toolbarTopHeight = ref(0)
 const toolbarBottomHeight = ref(0)
 
 /**
- * SOMBREADOS/INDICADORES PARA CABECERA Y PRIMERA COLUMNA STICKY
+ * STICKY / SHADOWS
  */
 const showShadowThead = ref(false)
 const showShadowFirstColumnRight = ref(false)
@@ -49,12 +49,12 @@ const showShadowFirstCellRight = ref(false)
 const showShadowFirstCellBottom = ref(false)
 
 /**
- * DETECCIÓN DE "MODO MÓVIL"
+ * MODO MÓVIL
  */
 const isMobile = ref(false)
 
 /**
- * ZOOM LIMITADO ENTRE 25 Y 200
+ * ZOOM
  */
 const clampedZoom = computed(() => {
   const z = Number(props.zoom)
@@ -65,19 +65,41 @@ const clampedZoom = computed(() => {
 const fontSize = computed(() => (clampedZoom.value * 0.9) / 100)
 
 /**
- * ALTURA DINÁMICA DE LA TABLA
+ * ALTURA DINÁMICA
  */
 const tableHeight = computed(() => {
-  return props.height === 0
-    ? windowHeight.value - boxTop.value - toolbarTopHeight.value - toolbarBottomHeight.value
-    : props.height
+  if (props.height !== 0) {
+    return props.height
+  }
+  // Ajuste automático al viewport
+  return windowHeight.value - boxTop.value - toolbarTopHeight.value - toolbarBottomHeight.value
 })
 
 /**
- * FUNCIONES AUXILIARES
+ * VIRTUALIZACIÓN
  */
+const scrollPositionY = ref(0)
+const totalRows = computed(() => props.items.length)
+const viewportRowCount = computed(() => {
+  // cuántas filas caben aprox. en el alto disponible
+  return Math.floor(tableHeight.value / props.itemHeight)
+})
+const buffer = 5
+const startIndex = computed(() => {
+  const rawIndex = Math.floor(scrollPositionY.value / props.itemHeight) - buffer
+  return Math.max(rawIndex, 0)
+})
+const endIndex = computed(() => {
+  const rawIndex = startIndex.value + viewportRowCount.value + buffer * 2
+  return Math.min(rawIndex, totalRows.value)
+})
+const visibleItems = computed(() => {
+  return props.items.slice(startIndex.value, endIndex.value)
+})
 
-// Ajusta dimensiones y "modo móvil" en cada resize
+/**
+ * FUNCIONES
+ */
 const handleResize = () => {
   if (typeof window === 'undefined') return
 
@@ -91,20 +113,22 @@ const handleResize = () => {
   toolbarTopHeight.value = toolbarTopRef.value?.offsetHeight || 0
   toolbarBottomHeight.value = toolbarBottomRef.value?.offsetHeight || 0
 
+  // Evita scroll en móvil
   document.body.style.overflow = isMobile.value ? 'hidden' : 'visible'
 }
 
-// Muestra sombras en la cabecera y la columna sticky cuando se hace scroll
 const handleTableScroll = () => {
   if (!tableWrapperRef.value) return
   const { scrollTop, scrollLeft } = tableWrapperRef.value
+  scrollPositionY.value = scrollTop
+
   showShadowThead.value = scrollTop > 0
   showShadowFirstColumnRight.value = scrollLeft > 0
   showShadowFirstCellRight.value = scrollLeft > 0
   showShadowFirstCellBottom.value = scrollTop > 0
 }
 
-// Navegación de celdas con teclas flecha
+// Navegación con teclas flecha
 const handleKeyDown = (event: KeyboardEvent) => {
   if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
     return
@@ -122,7 +146,6 @@ const handleKeyDown = (event: KeyboardEvent) => {
   const allCells = Array.from(
     (tableWrapperRef.value as HTMLElement).querySelectorAll('input[data-row][data-col]')
   ) as HTMLInputElement[]
-
   if (allCells.length === 0) return
 
   const maxRow = Math.max(...allCells.map(el => Number(el.getAttribute('data-row'))))
@@ -133,18 +156,24 @@ const handleKeyDown = (event: KeyboardEvent) => {
 
   switch (event.key) {
     case 'ArrowUp':
-      nextRow = rowIndex === 0 ? maxRow : rowIndex - 1
+
+      nextRow = rowIndex > 0 ? (rowIndex - 1) : 0
       break
     case 'ArrowDown':
-      nextRow = rowIndex === maxRow ? 0 : rowIndex + 1
+
+
+      nextRow = rowIndex < maxRow ? (rowIndex + 1) : maxRow
       break
     case 'ArrowLeft':
       nextCol = colIndex === 0 ? maxCol : colIndex - 1
+
       break
     case 'ArrowRight':
       nextCol = colIndex === maxCol ? 0 : colIndex + 1
+
       break
   }
+
 
   const nextInput = (tableWrapperRef.value as HTMLElement).querySelector(
     `input[data-row="${nextRow}"][data-col="${nextCol}"]`
@@ -155,7 +184,7 @@ const handleKeyDown = (event: KeyboardEvent) => {
   }
 }
 
-// Asegura que la celda enfocada sea visible al hacer scroll
+// Asegurar que la celda enfocada sea visible
 const ensureElementInView = (targetEl: HTMLElement) => {
   const wrapper = tableWrapperRef.value
   if (!wrapper) return
@@ -181,11 +210,9 @@ const ensureElementInView = (targetEl: HTMLElement) => {
   }
 }
 
-// Al hacer focus en un input, seleccionarlo y desplazar vista si es necesario
 const handleFocusIn = (event: FocusEvent) => {
   const target = event.target as HTMLInputElement
   if (!target) return
-
   if (target.tagName === 'INPUT' && target.hasAttribute('data-row')) {
     target.select()
     ensureElementInView(target)
@@ -193,7 +220,7 @@ const handleFocusIn = (event: FocusEvent) => {
 }
 
 /**
- * WATCHERS
+ * WATCHERS Y CICLO DE VIDA
  */
 watch(isMobile, () => {
   setTimeout(() => {
@@ -201,9 +228,6 @@ watch(isMobile, () => {
   }, 50)
 })
 
-/**
- * CICLO DE VIDA
- */
 onMounted(() => {
   if (typeof window === 'undefined') return
 
@@ -225,47 +249,72 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="boxRef" class=" theme-lerniz-table classBigUniqueTableDFlex classBigUniqueTableFlexColumn" id="box">
+  <div ref="boxRef" class="theme-lerniz-table classBigUniqueTableDFlex classBigUniqueTableFlexColumn" id="box">
     <!-- Toolbar superior -->
     <div ref="toolbarTopRef" class="classBigUniqueTableTollbarTop" id="toolbar-top">
       <slot name="toolbar-top"></slot>
     </div>
 
-    <!-- Contenedor principal de la tabla, con scroll y altura dinámica -->
+    <!-- Contenedor scroll principal -->
     <div ref="tableWrapperRef" class="classBigUniqueTableTableWrapper align-stretch classBigUniqueTableNiceScroll"
       :style="{ height: tableHeight + 'px' }" id="table">
-      <!-- Spinner o área en blanco si está cargando -->
-      <div v-if="props.isLoadingTable" style="height: 350px"
+      <!-- Spinner loading -->
+      <div v-if="props.isLoading" style="height: 350px"
         class="classBigUniqueTableDFlex classBigUniqueTableJustifyCenter classBigUniqueTableAlignCenter">
         <div class="classBigUniqueTableSpinner"></div>
       </div>
 
-      <!-- Contenido de la tabla real -->
-      <div v-else :id="props.tableID">
-        <!-- Si showTable es true, se muestra la tabla -->
-        <table v-if="showTable" class="classBigUniqueTableFixedTable"
-          :class="{ 'classBigUniqueTableShadowRightCol': showShadowFirstColumnRight }"
-          :style="{ 'font-size': fontSize + 'rem' }">
-          <thead :class="['classBigUniqueTableFixedThead', { 'classBigUniqueTableShadowUnder': showShadowThead }]">
-            <tr>
-              <!-- Primera celda sticky -->
-              <th :class="{
-                'classBigUniqueTableShadowFirstCellRight': showShadowFirstCellRight && !showShadowFirstCellBottom,
-                'classBigUniqueTableShadowFirstCellBottom': showShadowFirstCellBottom && !showShadowFirstCellRight,
-                'classBigUniqueTableShadowFirstCellAll': showShadowFirstCellBottom && showShadowFirstCellRight
-              }">
-                <slot name="first-cell"></slot>
-              </th>
-              <slot name="columns"></slot>
-            </tr>
-          </thead>
+      <!-- Contenido principal -->
+      <div v-else :id="props.tableID" class="divTable" :style="{ 'font-size': fontSize + 'rem' }">
+        <!-- Si no está en blankView, pintamos "div" table -->
+        <div v-if="!props.isBlankView">
+          <!-- Encabezado "row" sticky -->
+          <div class="divRow headerRow" :class="{
+            'withShadowUnder': showShadowThead,
+          }" style="position: sticky; top: 0; z-index: 10;">
+            <!-- Primera celda sticky (arriba-izquierda) -->
+            <div class="divCell stickyCorner" :class="{
+              'shadowFirstCellRight': showShadowFirstCellRight && !showShadowFirstCellBottom,
+              'shadowFirstCellBottom': showShadowFirstCellBottom && !showShadowFirstCellRight,
+              'shadowFirstCellAll': showShadowFirstCellBottom && showShadowFirstCellRight
+            }" style="position: sticky; left: 0; top: 0; z-index: 11; width: 20px;min-width: 20px;">
+              <slot name="first-cell"></slot>
+            </div>
 
-          <tbody class="classBigUniqueTableFixedColumn">
-            <slot name="rows"></slot>
-          </tbody>
-        </table>
+            <!-- Resto de celdas de cabecera -->
+            <div v-for="(header, index) in props.headers" :key="`head-${index}-${header.field}`"
+              class="divCell headerCell" :style="{ width: header.width + 'px', minWidth: header.width + 'px' }">
+              <slot name="header" :header="header">
+                {{ header.text }}
+              </slot>
+            </div>
+          </div>
 
-        <!-- Si showTable es false, mostramos un contenedor en blanco -->
+          <!-- Body con virtualización -->
+          <div class="divBody" :style="{
+            'padding-top': (startIndex * props.itemHeight) + 'px',
+            'padding-bottom': ((totalRows - endIndex) * props.itemHeight) + 'px',
+          }">
+            <!-- Renderizamos solo las filas visibles -->
+            <div v-for="(item, localIndex) in visibleItems" :key="startIndex + localIndex" class="divRow"
+              :style="{ height: props.itemHeight + 'px' }">
+              <!-- Primera columna sticky -->
+              <div class="divCell stickyLeft"
+                style="position: sticky; left: 0; z-index: 9; width: 20px;min-width: 20px;">
+                {{ (startIndex + localIndex) + 1 }}
+              </div>
+
+              <!-- Celdas data -->
+              <div v-for="(colum, colIndex) in props.headers" :key="colIndex" class="divCell"
+                :style="{ width: colum.width + 'px', minWidth: colum.width + 'px' }">
+                <input :data-row="startIndex + localIndex" :data-col="colIndex" :type="colum.type"
+                  :value="item[colum.field]" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Blank View -->
         <div v-else
           class="classBigUniqueTableBlankArea classBigUniqueTableDFlex classBigUniqueTableJustifyCenter classBigUniqueTableAlignCenter"
           style="width: 100%; background-color: transparent;">
@@ -280,216 +329,57 @@ onBeforeUnmount(() => {
     </div>
   </div>
 </template>
-
 <style>
-:root {
-  --excel-primary: rgb(168, 168, 168);
-  /* Azul clásico de Excel */
-  --excel-secondary: rgb(242, 242, 242);
-  /* Gris claro para fondo */
-  --excel-background: rgb(255, 255, 255);
-  /* Blanco */
-  --excel-border: rgb(198, 198, 198);
-  /* Bordes de celdas */
-  --excel-text: rgb(0, 0, 0);
-  /* Texto negro */
-  --excel-header-bg: rgb(214, 214, 214);
-  /* Azul claro para encabezados */
-  --excel-header-text: rgb(0, 32, 96);
-  /* Azul oscuro para encabezados */
-  --excel-hover: rgb(184, 204, 228);
-  /* Resaltado en hover */
-  --excel-error: rgb(255, 0, 0);
-  /* Rojo para errores */
-  --excel-error-bg: rgba(255, 0, 0, 0.1);
-  /* Fondo de error */
-}
-
-
-
-
-/* Spinner */
-.classBigUniqueTableSpinner {
-  width: 32px;
-  height: 32px;
-  border: 4px solid var(--excel-border);
-  border-top: 4px solid var(--excel-primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Clases utilitarias propias */
-.classBigUniqueTableDFlex {
-  display: flex;
-  width: 100%;
-}
-
-.classBigUniqueTableJustifyCenter {
-  justify-content: center;
-}
-
-.classBigUniqueTableAlignCenter {
-  align-items: center;
-}
-
-.classBigUniqueTableFlexColumn {
-  flex-direction: column;
-}
-
-/* Scrollable contenedor principal */
-.classBigUniqueTableTableWrapper {
-  overflow-x: auto;
-  overflow-y: auto;
-  border-bottom: 1px solid var(--excel-border);
-}
-
-/* Tabla con "border-spacing" para permitir sticky */
-.classBigUniqueTableFixedTable {
-  width: auto;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-
-/* Celdas y cabeceras */
-.classBigUniqueTableFixedTable th,
-.classBigUniqueTableFixedTable td {
-  text-align: left;
-  border: 1px solid var(--excel-border);
-  height: 18px;
+/* Contenedor principal que “simula” tabla */
+.divTable {
   position: relative;
-  color: var(--excel-text);
-}
-
-/* Estilos de cabecera */
-.classBigUniqueTableFixedTable th {
-  border: 1px solid var(--excel-primary);
-  font-size: 0.8em;
-  background-color: var(--excel-header-bg);
-  color: var(--excel-header-text);
-  z-index: 3;
-}
-
-.classBigUniqueTableFixedTable td {
-  font-size: 0.9em;
-  background-color: var(--excel-background);
-}
-
-/* Inputs internos */
-.classBigUniqueTableFixedTable td input {
   width: 100%;
-  height: 100%;
   box-sizing: border-box;
-  border: none;
-  outline-color: var(--excel-primary);
-  border-radius: 0px !important;
 }
 
-/* Resaltar errores */
-.classBigUniqueTableInputError {
-  color: var(--excel-error);
-  font-weight: 500;
-  background-color: var(--excel-error-bg);
-  outline-color: var(--excel-error) !important;
-}
-
-/* Hover en las filas */
-.classBigUniqueTableFixedTable tr:hover {
-  background-color: var(--excel-hover);
-}
-
-/* Thead sticky */
-.classBigUniqueTableFixedThead {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-}
-
-/* Primera columna sticky */
-.classBigUniqueTableFixedColumn td:first-child {
-  position: sticky;
-  left: 0;
-  z-index: 1;
-  padding: 2px 8px;
-  text-align: center;
-  background-color: var(--excel-background);
-}
-
-/* Sombra bajo la cabecera */
-.classBigUniqueTableShadowUnder {
-  box-shadow: 0px 5px 8px -2px rgba(0, 0, 0, 0.4);
-}
-
-/* Sombra derecha en primera columna */
-.classBigUniqueTableShadowRightCol .classBigUniqueTableFixedColumn td:first-child {
-  box-shadow: 4px 0px 8px -2px rgba(0, 0, 0, 0.4);
-  clip-path: inset(0px -8px 0px 0px);
-}
-
-/* Ajuste para la primera celda <th> sticky */
-.classBigUniqueTableFixedThead th:first-child {
-  position: sticky;
-  left: 0;
-  top: 0;
-  z-index: 4;
-  min-width: 30px !important;
-  height: 67px !important;
-  min-height: 67px !important;
-  background-color: var(--excel-header-bg);
-}
-
-/* Sombras combinadas al cruzar scroll horizontal/vertical */
-.classBigUniqueTableShadowFirstCellRight {
-  box-shadow: 4px 0px 8px -2px rgba(0, 0, 0, 0.4);
-  clip-path: inset(0px -8px 0px 0px);
-}
-
-.classBigUniqueTableShadowFirstCellBottom {
-  box-shadow: 0px 4px 8px -2px rgba(0, 0, 0, 0.4);
-  clip-path: inset(0px 0px -8px 0px);
-}
-
-.classBigUniqueTableShadowFirstCellAll {
-  box-shadow: -4px 0px 8px -2px rgba(0, 0, 0, 0.4),
-    4px 0px 8px -2px rgba(0, 0, 0, 0.4);
-  clip-path: inset(0px -8px 0px -8px);
-}
-
-/* Estilo de la columna "Name" */
-.classBigUniqueTableName {
-  min-width: 200px;
-}
-
-/* Área en blanco */
-.classBigUniqueTableBlankArea {
+/* Cada “fila” */
+.divRow {
+  display: flex;
+  flex-direction: row;
   width: 100%;
-  background-color: transparent;
-}
-.classBigUniqueTableTollbarTop {
-  background-color: #344e41;
-  color: white;
-  padding: 8px;
+  box-sizing: border-box;
 }
 
-.theme-lerniz-table th {
-  background-color: #3a5a40;
-  border-color: rgb(58, 88, 64);
-  ;
+/* Cada “celda” */
+.divCell {
+  box-sizing: border-box;
+  /* border: 1px solid #ddd;   si quieres ver bordes */
+  /* vertical-align: middle;  si quieres centrar inline */
+  overflow: hidden;
+  /* si el contenido se pasa */
 }
 
-.theme-lerniz-table th:first-child {
-  background-color: #588157;
+/* Sticky de la primera columna */
+.stickyLeft {
+  background: white;
+  /* Para tapar el contenido detrás en scroll horizontal */
 }
 
-.theme-lerniz-table th:not(first-child) {
-  background-color: #3a5a40;
-  color: white;
-  padding: 2px 10px;
-  min-width: 40px;
+/* Sticky de la cabecera */
+.headerRow {
+  background: white;
+  /* Para tapar celdas al hacer scroll vertical */
+}
+
+/* Sombras si gustas (ejemplo) */
+.withShadowUnder {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.shadowFirstCellRight {
+  box-shadow: inset -2px 0 2px -2px rgba(0, 0, 0, 0.3);
+}
+
+.shadowFirstCellBottom {
+  box-shadow: inset 0 -2px 2px -2px rgba(0, 0, 0, 0.3);
+}
+
+.shadowFirstCellAll {
+  box-shadow: inset -2px -2px 3px -2px rgba(0, 0, 0, 0.3);
 }
 </style>
