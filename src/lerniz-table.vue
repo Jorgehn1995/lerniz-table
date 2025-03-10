@@ -248,7 +248,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="boxRef" class="theme-lerniz-table classBigUniqueTableDFlex classBigUniqueTableFlexColumn" id="box">
+  <div ref="boxRef" class="lerniz-table classBigUniqueTableDFlex classBigUniqueTableFlexColumn" id="box">
     <!-- Toolbar superior -->
     <div ref="toolbarTopRef" class="classBigUniqueTableTollbarTop" id="toolbar-top">
       <slot name="toolbar-top"></slot>
@@ -272,7 +272,7 @@ onBeforeUnmount(() => {
             'shadowFirstRow': showShadowThead,
           }" style="position: sticky; top: 0; z-index: 10;">
             <!-- Primera celda sticky (arriba-izquierda) -->
-            <div class="divCell stickyCorner" :class="{
+            <div class="firstCell" :class="{
               'shadowFirstCellRight': showShadowFirstCellRight && !showShadowFirstCellBottom,
               'shadowFirstCellBottom': showShadowFirstCellBottom && !showShadowFirstCellRight,
               'shadowFirstCellAll': showShadowFirstCellBottom && showShadowFirstCellRight
@@ -283,7 +283,7 @@ onBeforeUnmount(() => {
 
             <!-- Resto de celdas de cabecera -->
             <div v-for="(header, index) in props.headers" :key="`head-${index}-${header.field}`"
-              class="divCell headerCell" :style="{ width: header.width + 'px', minWidth: header.width + 'px' }">
+              class="headerCell" :style="{ width: header.width + 'px', minWidth: header.width + 'px' }">
               <slot name="header" :header="header">
                 {{ header.text }}
               </slot>
@@ -332,42 +332,72 @@ onBeforeUnmount(() => {
   </div>
 </template>
 <style scoped>
+.lerniz-table {
+  --lerniz-table-toolbar: rgb(52, 78, 65);
+  --lerniz-table-first-cell: rgb(88, 129, 87);
+  --lerniz-table-first-row: rgb(58, 90, 64);
+  --lerniz-table-first-column: rgb(229, 229, 229);
+  --lerniz-table-header-border: rgb(69, 101, 76);
+}
+
 /* Contenedor principal que “simula” tabla */
-.divTable {
+.lerniz-table .divTable {
   position: relative;
   width: 100%;
   box-sizing: border-box;
 }
 
 /* Cada “fila” */
-.divRow {
+.lerniz-table .divRow {
   display: flex;
   flex-direction: row;
   width: 100%;
   box-sizing: border-box;
 }
 
+/* Primera ceda */
+.lerniz-table .firstCell {
+  background-color: var(--lerniz-table-first-cell);
+  border-color: 1px solid var(--lerniz-table-header-border);
+}
+
+
+.lerniz-table .headerCell{
+  background-color: var(--lerniz-table-first-row);
+  border-color: 1px solid var(--lerniz-table-header-border);
+  color: white;
+  padding: 2px;
+}
+
 /* Cada “celda” */
-.divCell {
+.lerniz-table .divCell {
   box-sizing: border-box;
-  /* border: 1px solid #ddd;   si quieres ver bordes */
+  border: 1px solid #ddd;
   /* vertical-align: middle;  si quieres centrar inline */
   overflow: hidden;
   /* si el contenido se pasa */
 }
-.divCell input{
+
+
+
+
+
+.divCell input {
   height: 100%;
+  border: 0px;
 }
 
 /* Sticky de la primera columna */
 .stickyLeft {
   background: white;
+  text-align: center;
   /* Para tapar el contenido detrás en scroll horizontal */
 }
 
 /* Sticky de la cabecera */
 .headerRow {
   background: white;
+  min-height: 40px;
   /* Para tapar celdas al hacer scroll vertical */
 }
 
