@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// El script setup se mantiene igual que en la versión original
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { items, headers } from "./items";
 import { Header } from "./types";
@@ -23,6 +22,19 @@ const viewportRef = ref<HTMLElement | null>(null);
 const viewportHeaderRef = ref<HTMLElement | null>(null);
 
 let rafId: number | null = null;
+
+// Nuevo: Función para calcular el ancho de la barra de scroll
+function getScrollbarWidth() {
+  const outer = document.createElement("div");
+  outer.style.visibility = "hidden";
+  outer.style.overflow = "scroll";
+  outer.style.width = "100px";
+  outer.style.position = "absolute";
+  document.body.appendChild(outer);
+  const scrollbarWidth = outer.offsetWidth - outer.clientWidth;
+  document.body.removeChild(outer);
+  return scrollbarWidth;
+}
 
 function cancelRafIfNeeded() {
   if (rafId !== null) {
@@ -94,7 +106,18 @@ onMounted(() => {
     viewportHeight.value = mainRef.value.clientHeight;
   }
 
-  mainRef.value?.addEventListener("scroll", handleMainScroll, { passive: true });
+  // Nuevo: Aplicar padding para compensar la barra de scroll vertical
+  let scrollbarWidth = getScrollbarWidth();
+  if (scrollbarWidth < 1) {
+    scrollbarWidth = 8;
+  }
+  if (viewportHeaderRef.value) {
+    viewportHeaderRef.value.style.marginRight = `${scrollbarWidth}px`;
+  }
+
+  mainRef.value?.addEventListener("scroll", handleMainScroll, {
+    passive: true,
+  });
   viewportRef.value?.addEventListener("scroll", handleViewportScroll, {
     passive: true,
   });
@@ -120,7 +143,7 @@ onUnmounted(() => {
     <button class="pin-button" @click="pinnedFirstColumn()">
       <span>📌 Fijar primera columna</span>
     </button>
-    
+
     <div class="wrapped">
       <div class="header">
         <div
@@ -226,7 +249,8 @@ onUnmounted(() => {
         </div>
 
         <div class="scroll-info">
-          Scroll vertical: {{ scrollY }} px | Scroll horizontal: {{ scrollX }} px
+          Scroll vertical: {{ scrollY }} px | Scroll horizontal:
+          {{ scrollX }} px
         </div>
       </div>
     </div>
@@ -234,8 +258,13 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+/* Añadir esta propiedad al viewport del header */
+.header .viewport {
+  box-sizing: border-box;
+}
+
 .component-container {
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
   padding: 1rem;
 }
 
@@ -256,7 +285,7 @@ onUnmounted(() => {
 
 .pin-button:hover {
   background: #303f9f;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .wrapped {
@@ -276,7 +305,7 @@ onUnmounted(() => {
   background: var(--header-bg);
   position: relative;
   z-index: 2;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .header-cell {
@@ -332,7 +361,7 @@ onUnmounted(() => {
 .pinned-left {
   background: var(--first-column-bg);
   z-index: 1;
-  box-shadow: 2px 0 4px rgba(0,0,0,0.05);
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
 }
 
 .viewport {
