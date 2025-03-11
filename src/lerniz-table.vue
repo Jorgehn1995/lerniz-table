@@ -3,7 +3,7 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 import { items, headers } from "./items";
 import { Header } from "./types";
 
-const itemHeight = 25;
+const itemHeight = 35; // Ajustado para coincidir con el CSS (35px)
 
 const bgHeight = computed(() => {
   return items.length * itemHeight + "px";
@@ -12,20 +12,17 @@ const bgHeight = computed(() => {
 const pinnedHeaders = ref<Header[]>([]);
 const viewportHeaders = ref<Header[]>([]);
 
-// Variables reactivas para mostrar en pantalla (pero limitaremos su actualización)
 const scrollY = ref(0);
 const scrollX = ref(0);
 const pinnedLeftWidth = ref(50);
+const viewportHeight = ref(200); // Altura inicial, se actualiza en onMounted
 
-// Referencias a los elementos DOM
 const mainRef = ref<HTMLElement | null>(null);
 const viewportRef = ref<HTMLElement | null>(null);
 const viewportHeaderRef = ref<HTMLElement | null>(null);
 
-// ID para cancelar `requestAnimationFrame` si hay muchas llamadas seguidas
 let rafId: number | null = null;
 
-// Función auxiliar para cancelar un `requestAnimationFrame` pendiente
 function cancelRafIfNeeded() {
   if (rafId !== null) {
     cancelAnimationFrame(rafId);
@@ -33,7 +30,6 @@ function cancelRafIfNeeded() {
   }
 }
 
-// Manejadores de scroll con rAF para agrupar los updates
 function handleMainScroll() {
   cancelRafIfNeeded();
   rafId = requestAnimationFrame(() => {
@@ -49,13 +45,13 @@ function handleViewportScroll() {
     if (viewportRef.value && viewportHeaderRef.value) {
       const x = viewportRef.value.scrollLeft;
       scrollX.value = x;
-      // Sincroniza el header al scroll horizontal
       viewportHeaderRef.value.scrollLeft = x;
     }
   });
 }
 
 const pinnedFirstColumn = () => {
+  if (viewportHeaders.value.length === 0) return;
   pinnedHeaders.value.push(viewportHeaders.value[0]);
   viewportHeaders.value.splice(0, 1);
   pinnedLeftWidth.value =
@@ -72,19 +68,33 @@ function handleViewportHeaderScroll() {
     if (viewportHeaderRef.value && viewportRef.value) {
       const x = viewportHeaderRef.value.scrollLeft;
       scrollX.value = x;
-      // Sincroniza la vista principal al scroll horizontal
       viewportRef.value.scrollLeft = x;
     }
   });
 }
 
+// Cálculo de filas visibles
+const buffer = 5; // Filas adicionales para scroll suave
+const startIndex = computed(() => {
+  return Math.max(0, Math.floor(scrollY.value / itemHeight) - buffer);
+});
+const endIndex = computed(() => {
+  return Math.min(
+    items.length,
+    Math.ceil((scrollY.value + viewportHeight.value) / itemHeight) + buffer
+  );
+});
+const visibleItems = computed(() => {
+  return items.slice(startIndex.value, endIndex.value);
+});
+
 onMounted(() => {
   viewportHeaders.value = headers;
+  if (mainRef.value) {
+    viewportHeight.value = mainRef.value.clientHeight;
+  }
 
-  // Listeners de scroll con { passive: true }
-  mainRef.value?.addEventListener("scroll", handleMainScroll, {
-    passive: true,
-  });
+  mainRef.value?.addEventListener("scroll", handleMainScroll, { passive: true });
   viewportRef.value?.addEventListener("scroll", handleViewportScroll, {
     passive: true,
   });
@@ -110,7 +120,6 @@ onUnmounted(() => {
     <button @click="pinnedFirstColumn()">pinned first column</button>
     <div class="wrapped">
       <div class="header">
-        <!-- Pinned a la izquierda -->
         <div
           class="pinned-left"
           :style="{
@@ -133,7 +142,6 @@ onUnmounted(() => {
             </div>
           </div>
         </div>
-        <!-- Cabecera (header) que se sincroniza horizontalmente -->
         <div class="viewport" ref="viewportHeaderRef">
           <div class="row">
             <div
@@ -153,7 +161,7 @@ onUnmounted(() => {
 
       <div class="layout">
         <div class="main" ref="mainRef">
-          <!-- Columna fija (pinned-left) -->
+          <!-- Sección pinned-left con virtualización -->
           <div
             class="pinned-left fit"
             :style="{
@@ -162,42 +170,60 @@ onUnmounted(() => {
               height: bgHeight,
             }"
           >
-            <div class="row" v-for="(item, i) in items" :key="i">
-              <div class="cell firstColumn">
-                {{ i + 1 }}
-              </div>
-              <div
-                class="cell"
-                v-for="(header, colIndex) in pinnedHeaders"
-                :key="header.field"
-                :style="{
-                  width: header.width + 'px',
-                  minWidth: header.width + 'px',
-                }"
-              >
-                {{ item[header.field] }}
+            <div
+              :style="{
+                paddingTop: startIndex * itemHeight + 'px',
+                paddingBottom: (items.length - endIndex) * itemHeight + 'px',
+              }"
+            >
+              <div class="row" v-for="(item, i) in visibleItems" :key="i">
+                <div class="cell firstColumn">
+                  {{ startIndex + i + 1 }}
+                </div>
+                <div
+                  class="cell"
+                  v-for="(header, colIndex) in pinnedHeaders"
+                  :key="header.field"
+                  :style="{
+                    width: header.width + 'px',
+                    minWidth: header.width + 'px',
+                  }"
+                >
+                  {{ item[header.field] }}
+                </div>
               </div>
             </div>
           </div>
-          <!-- Viewport principal, scroll vertical y horizontal -->
+
+          <!-- Viewport principal con virtualización -->
           <div class="viewport" :style="{ height: bgHeight }" ref="viewportRef">
-            <div class="row" v-for="(item, rowIndex) in items" :key="rowIndex">
+            <div
+              :style="{
+                paddingTop: startIndex * itemHeight + 'px',
+                paddingBottom: (items.length - endIndex) * itemHeight + 'px',
+              }"
+            >
               <div
-                class="cell"
-                v-for="(header, colIndex) in viewportHeaders"
-                :key="header.field"
-                :style="{
-                  width: header.width + 'px',
-                  minWidth: header.width + 'px',
-                }"
+                class="row"
+                v-for="(item, rowIndex) in visibleItems"
+                :key="rowIndex"
               >
-                {{ item[header.field] }}
+                <div
+                  class="cell"
+                  v-for="(header, colIndex) in viewportHeaders"
+                  :key="header.field"
+                  :style="{
+                    width: header.width + 'px',
+                    minWidth: header.width + 'px',
+                  }"
+                >
+                  {{ item[header.field] }}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Mostrar valores del scroll -->
         <div class="scroll-info">
           Scroll Y (main): {{ scrollY }} px
           <br />
