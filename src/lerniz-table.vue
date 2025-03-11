@@ -5,6 +5,8 @@ import { Header } from "./types";
 
 const itemHeight = 35;
 
+const hoveredRowIndex = ref(-1);
+
 const bgHeight = computed(() => {
   return items.length * itemHeight + "px";
 });
@@ -201,7 +203,14 @@ onUnmounted(() => {
                 paddingBottom: (items.length - endIndex) * itemHeight + 'px',
               }"
             >
-              <div class="row" v-for="(item, i) in visibleItems" :key="i">
+              <div
+                class="row"
+                v-for="(item, i) in visibleItems"
+                :key="i"
+                @mouseenter="hoveredRowIndex = startIndex + i"
+                @mouseleave="hoveredRowIndex = -1"
+                :class="{ hovered: hoveredRowIndex === startIndex + i }"
+              >
                 <div class="cell firstColumn data-cell">
                   {{ startIndex + i + 1 }}
                 </div>
@@ -231,6 +240,9 @@ onUnmounted(() => {
                 class="row"
                 v-for="(item, rowIndex) in visibleItems"
                 :key="rowIndex"
+                @mouseenter="hoveredRowIndex = startIndex + rowIndex"
+                @mouseleave="hoveredRowIndex = -1"
+                :class="{ hovered: hoveredRowIndex === startIndex + rowIndex }"
               >
                 <div
                   class="cell data-cell"
@@ -250,7 +262,7 @@ onUnmounted(() => {
 
         <div class="scroll-info">
           Scroll vertical: {{ scrollY }} px | Scroll horizontal:
-          {{ scrollX }} px
+          {{ scrollX }} px | Row hover: {{ hoveredRowIndex }}
         </div>
       </div>
     </div>
@@ -323,7 +335,7 @@ onUnmounted(() => {
   transition: background-color 0.2s ease;
 }
 
-.row:hover .data-cell {
+.row.hovered .data-cell {
   background: var(--row-hover);
 }
 
