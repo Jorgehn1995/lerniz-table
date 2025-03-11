@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
 import { items, headers } from "./items";
 import { Header } from "./types";
 
 const itemHeight = 35;
 
 const hoveredRowIndex = ref(-1);
+const selectedRow = ref(-1);
+const selectedCol = ref(-1);
 
 const bgHeight = computed(() => {
   return items.length * itemHeight + "px";
@@ -25,7 +27,6 @@ const viewportHeaderRef = ref<HTMLElement | null>(null);
 
 let rafId: number | null = null;
 
-// Nuevo: Función para calcular el ancho de la barra de scroll
 function getScrollbarWidth() {
   const outer = document.createElement("div");
   outer.style.visibility = "hidden";
@@ -102,17 +103,111 @@ const visibleItems = computed(() => {
   return items.slice(startIndex.value, endIndex.value);
 });
 
+function ensureCellVisible(row: number, col: number) {
+  const rowTop = row * itemHeight;
+  const rowBottom = (row + 1) * itemHeight;
+  const currentScrollY = scrollY.value;
+  const viewportHeightVal = viewportHeight.value;
+
+  if (rowTop < currentScrollY) {
+    mainRef.value?.scrollTo({ top: rowTop });
+  } else if (rowBottom > currentScrollY + viewportHeightVal) {
+    mainRef.value?.scrollTo({ top: rowBottom - viewportHeightVal });
+  }
+
+  if (col === 0) return;
+
+  const totalPinned = pinnedHeaders.value.length;
+  if (col <= totalPinned) return;
+
+  const viewportColIndex = col - totalPinned - 1;
+  if (viewportColIndex < 0 || viewportColIndex >= viewportHeaders.value.length)
+    return;
+
+  let start = 0;
+  for (let i = 0; i < viewportColIndex; i++) {
+    start += viewportHeaders.value[i].width || 0;
+  }
+  const end = start + (viewportHeaders.value[viewportColIndex].width || 0);
+
+  const viewportWidth = viewportRef.value?.clientWidth || 0;
+  const currentScrollX = scrollX.value;
+
+  if (start < currentScrollX) {
+    viewportRef.value?.scrollTo({ left: start });
+  } else if (end > currentScrollX + viewportWidth) {
+    viewportRef.value?.scrollTo({ left: end - viewportWidth });
+  }
+}
+
+function handleCellClick(rowIndex: number, colIndex: number) {
+  selectedRow.value = rowIndex;
+  selectedCol.value = colIndex;
+}
+
+function handleDocumentClick(event: MouseEvent) {
+  if (!mainRef.value?.contains(event.target as Node)) {
+    selectedRow.value = -1;
+    selectedCol.value = -1;
+  }
+}
+
+function handleKeyDown(event: KeyboardEvent) {
+  const { key } = event;
+  const totalCols =
+    1 + pinnedHeaders.value.length + viewportHeaders.value.length;
+  let newRow = selectedRow.value;
+  let newCol = selectedCol.value;
+
+  switch (key) {
+    case "ArrowUp":
+      event.preventDefault();
+      newRow = Math.max(0, newRow - 1);
+      break;
+    case "ArrowDown":
+      event.preventDefault();
+      newRow = Math.min(items.length - 1, newRow + 1);
+      break;
+    case "ArrowLeft":
+      event.preventDefault();
+      newCol = newCol - 1 == 0 ? 1 : Math.max(0, newCol - 1);
+      console.log(newCol);
+      
+      break;
+    case "ArrowRight":
+      event.preventDefault();
+      newCol = Math.min(totalCols - 1, newCol + 1);
+      break;
+    case "Enter":
+      event.preventDefault();
+      if (selectedRow.value >= 0 && selectedCol.value >= 0) {
+        enterSelected(selectedRow.value, selectedCol.value);
+      }
+      break;
+    default:
+      return;
+  }
+
+  if (newRow !== selectedRow.value || newCol !== selectedCol.value) {
+    selectedRow.value = newRow;
+    selectedCol.value = newCol;
+    nextTick(() => ensureCellVisible(newRow, newCol));
+  }
+}
+
+const enterSelected = (row: string | number, col: string | number) => {
+  console.log(`enter keydown - row: ${row}, col: ${col}`);
+};
+
 onMounted(() => {
   viewportHeaders.value = headers;
   if (mainRef.value) {
     viewportHeight.value = mainRef.value.clientHeight;
+    mainRef.value.focus();
   }
 
-  // Nuevo: Aplicar padding para compensar la barra de scroll vertical
   let scrollbarWidth = getScrollbarWidth();
-  if (scrollbarWidth < 1) {
-    scrollbarWidth = 8;
-  }
+  if (scrollbarWidth < 1) scrollbarWidth = 8;
   if (viewportHeaderRef.value) {
     viewportHeaderRef.value.style.marginRight = `${scrollbarWidth}px`;
   }
@@ -128,6 +223,7 @@ onMounted(() => {
     handleViewportHeaderScroll,
     { passive: true }
   );
+  document.addEventListener("click", handleDocumentClick);
 });
 
 onUnmounted(() => {
@@ -137,6 +233,7 @@ onUnmounted(() => {
     "scroll",
     handleViewportHeaderScroll
   );
+  document.removeEventListener("click", handleDocumentClick);
 });
 </script>
 
@@ -188,7 +285,7 @@ onUnmounted(() => {
       </div>
 
       <div class="layout">
-        <div class="main" ref="mainRef">
+        <div class="main" ref="mainRef" tabindex="0" @keydown="handleKeyDown">
           <div
             class="pinned-left fit"
             :style="{
@@ -222,6 +319,13 @@ onUnmounted(() => {
                     width: header.width + 'px',
                     minWidth: header.width + 'px',
                   }"
+                  @click="handleCellClick(startIndex + i, 1 + colIndex)"
+                  @dblclick="enterSelected(startIndex + i, 1 + colIndex)"
+                  :class="{
+                    selected:
+                      selectedRow === startIndex + i &&
+                      selectedCol === 1 + colIndex,
+                  }"
                 >
                   {{ item[header.field] }}
                 </div>
@@ -252,6 +356,23 @@ onUnmounted(() => {
                     width: header.width + 'px',
                     minWidth: header.width + 'px',
                   }"
+                  @click="
+                    handleCellClick(
+                      startIndex + rowIndex,
+                      1 + pinnedHeaders.length + colIndex
+                    )
+                  "
+                  @dblclick="
+                    enterSelected(
+                      startIndex + rowIndex,
+                      1 + pinnedHeaders.length + colIndex
+                    )
+                  "
+                  :class="{
+                    selected:
+                      selectedRow === startIndex + rowIndex &&
+                      selectedCol === 1 + pinnedHeaders.length + colIndex,
+                  }"
                 >
                   {{ item[header.field] }}
                 </div>
@@ -270,9 +391,12 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* Añadir esta propiedad al viewport del header */
-.header .viewport {
-  box-sizing: border-box;
+.selected {
+  background: rgba(63, 81, 181, 0.1) !important;
+  outline: 2px solid #3f51b5;
+  outline-offset: -2px;
+  z-index: 1;
+  position: relative;
 }
 
 .component-container {
@@ -351,6 +475,7 @@ onUnmounted(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
 }
 
 .firstColumn {
@@ -361,12 +486,14 @@ onUnmounted(() => {
   border-left: none;
   font-weight: 500;
   background: var(--first-column-bg);
+  cursor: default;
 }
 
 .layout .main {
   display: flex;
   overflow-y: auto;
   background: white;
+  outline: none;
   height: 400px;
 }
 
@@ -391,7 +518,6 @@ onUnmounted(() => {
   border-top: 1px solid var(--border-color);
 }
 
-/* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
