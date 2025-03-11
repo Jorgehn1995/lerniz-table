@@ -1,9 +1,10 @@
 <script setup lang="ts">
+// El script setup se mantiene igual que en la versión original
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { items, headers } from "./items";
 import { Header } from "./types";
 
-const itemHeight = 35; // Ajustado para coincidir con el CSS (35px)
+const itemHeight = 35;
 
 const bgHeight = computed(() => {
   return items.length * itemHeight + "px";
@@ -15,7 +16,7 @@ const viewportHeaders = ref<Header[]>([]);
 const scrollY = ref(0);
 const scrollX = ref(0);
 const pinnedLeftWidth = ref(50);
-const viewportHeight = ref(200); // Altura inicial, se actualiza en onMounted
+const viewportHeight = ref(200);
 
 const mainRef = ref<HTMLElement | null>(null);
 const viewportRef = ref<HTMLElement | null>(null);
@@ -73,8 +74,7 @@ function handleViewportHeaderScroll() {
   });
 }
 
-// Cálculo de filas visibles
-const buffer = 5; // Filas adicionales para scroll suave
+const buffer = 5;
 const startIndex = computed(() => {
   return Math.max(0, Math.floor(scrollY.value / itemHeight) - buffer);
 });
@@ -116,8 +116,11 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div>
-    <button @click="pinnedFirstColumn()">pinned first column</button>
+  <div class="component-container">
+    <button class="pin-button" @click="pinnedFirstColumn()">
+      <span>📌 Fijar primera columna</span>
+    </button>
+    
     <div class="wrapped">
       <div class="header">
         <div
@@ -128,9 +131,9 @@ onUnmounted(() => {
           }"
         >
           <div class="row">
-            <div class="cell firstColumn">#</div>
+            <div class="cell firstColumn header-cell">#</div>
             <div
-              class="cell"
+              class="cell header-cell"
               v-for="(header, colIndex) in pinnedHeaders"
               :key="header.field"
               :style="{
@@ -145,7 +148,7 @@ onUnmounted(() => {
         <div class="viewport" ref="viewportHeaderRef">
           <div class="row">
             <div
-              class="cell"
+              class="cell header-cell"
               v-for="(header, colIndex) in viewportHeaders"
               :key="header.field"
               :style="{
@@ -161,7 +164,6 @@ onUnmounted(() => {
 
       <div class="layout">
         <div class="main" ref="mainRef">
-          <!-- Sección pinned-left con virtualización -->
           <div
             class="pinned-left fit"
             :style="{
@@ -177,11 +179,11 @@ onUnmounted(() => {
               }"
             >
               <div class="row" v-for="(item, i) in visibleItems" :key="i">
-                <div class="cell firstColumn">
+                <div class="cell firstColumn data-cell">
                   {{ startIndex + i + 1 }}
                 </div>
                 <div
-                  class="cell"
+                  class="cell data-cell"
                   v-for="(header, colIndex) in pinnedHeaders"
                   :key="header.field"
                   :style="{
@@ -195,7 +197,6 @@ onUnmounted(() => {
             </div>
           </div>
 
-          <!-- Viewport principal con virtualización -->
           <div class="viewport" :style="{ height: bgHeight }" ref="viewportRef">
             <div
               :style="{
@@ -209,7 +210,7 @@ onUnmounted(() => {
                 :key="rowIndex"
               >
                 <div
-                  class="cell"
+                  class="cell data-cell"
                   v-for="(header, colIndex) in viewportHeaders"
                   :key="header.field"
                   :style="{
@@ -225,9 +226,7 @@ onUnmounted(() => {
         </div>
 
         <div class="scroll-info">
-          Scroll Y (main): {{ scrollY }} px
-          <br />
-          Scroll X (viewport): {{ scrollX }} px
+          Scroll vertical: {{ scrollY }} px | Scroll horizontal: {{ scrollX }} px
         </div>
       </div>
     </div>
@@ -235,79 +234,139 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.component-container {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  padding: 1rem;
+}
+
+.pin-button {
+  background: #3f51b5;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pin-button:hover {
+  background: #303f9f;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
 .wrapped {
-  --head-color: #eaeaea;
-  --viewport-color: #fff;
-  --border-color: rgba(0, 0, 0, 0.1);
+  --header-bg: #f8f9fa;
+  --header-text: #454545;
+  --first-column-bg: #f8f9fa;
+  --row-hover: rgba(63, 81, 181, 0.05);
+  --border-color: #e0e0e0;
   --item-height: 35px;
-}
-.wrapped .header {
-  display: flex;
-  flex-direction: row;
-}
-
-.wrapped .header .pinned-left {
-  overflow-x: hidden;
-
-  background-color: var(--viewport-color);
-  overflow-y: hidden;
-}
-.wrapped .header .viewport {
-  display: flex;
-  flex-direction: column;
-  background-color: var(--viewport-color);
-  /* Importante: ocultar scrollbar horizontal y manipularlo manualmente */
-  overflow-x: auto;
-  width: 100%;
-  overflow-y: hidden;
-  scrollbar-width: none !important;
-}
-
-.wrapped .layout .main {
-  display: flex;
-  flex-direction: row;
-  overflow-y: auto;
-  height: 200px;
-}
-.wrapped .layout .main .pinned-left {
-  overflow-x: hidden;
-
-  background-color: var(--viewport-color);
-  overflow-y: hidden;
-}
-.wrapped .layout .main .viewport {
-  display: flex;
-  flex-direction: column;
-  background-color: var(--viewport-color);
-  overflow-x: auto;
-  width: 100%;
-  overflow-y: hidden;
-  scrollbar-width: none !important;
-}
-
-.wrapped .row {
-  display: flex;
-  flex-direction: row;
-  height: var(--item-height);
-  max-height: var(--item-height);
-}
-
-.wrapped .cell {
-  height: var(--item-height);
-  max-height: var(--item-height);
   border: 1px solid var(--border-color);
-  box-sizing: border-box;
+  border-radius: 6px;
+  overflow: hidden;
 }
-.wrapped .firstColumn {
-  background-color: var(--head-color);
+
+.header {
+  display: flex;
+  background: var(--header-bg);
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.header-cell {
+  background: var(--header-bg) !important;
+  color: var(--header-text) !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+}
+
+.row {
+  display: flex;
+  height: var(--item-height);
+  transition: background-color 0.2s ease;
+}
+
+.row:hover .data-cell {
+  background: var(--row-hover);
+}
+
+.cell {
+  height: var(--item-height);
+  padding: 0 0.8rem;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  background: white;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.firstColumn {
   width: 50px;
   min-width: 50px;
-  text-align: center;
+  max-width: 50px;
+  justify-content: center;
+  border-left: none;
+  font-weight: 500;
+  background: var(--first-column-bg);
+}
+
+.layout .main {
+  display: flex;
+  overflow-y: auto;
+  background: white;
+  height: 400px;
+}
+
+.pinned-left {
+  background: var(--first-column-bg);
+  z-index: 1;
+  box-shadow: 2px 0 4px rgba(0,0,0,0.05);
+}
+
+.viewport {
+  flex-grow: 1;
+  overflow-x: auto;
+  position: relative;
+  overflow-y: hidden;
 }
 
 .scroll-info {
-  margin-top: 10px;
-  font-size: 14px;
-  color: #333;
+  padding: 0.8rem;
+  font-size: 0.8rem;
+  color: #666;
+  background: #f8f9fa;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 </style>
