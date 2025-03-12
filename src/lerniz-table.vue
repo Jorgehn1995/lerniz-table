@@ -1,7 +1,13 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
-import { items, headers } from "./items";
-import { Header } from "./types";
+import { ref, computed, onMounted, onUnmounted, nextTick, defineProps } from "vue";
+import { Header, TableItem } from "./types";
+
+export interface LernizTableProps<T extends Record<string, any>> {
+  items: T[];
+  headers: Header[];
+}
+
+const props = defineProps<LernizTableProps<Record<string, any>>>();
 
 const itemHeight = 35;
 
@@ -10,7 +16,7 @@ const selectedRow = ref(-1);
 const selectedCol = ref(-1);
 const isDarkMode = ref(false);
 
-const bgHeight = computed(() => `${items.length * itemHeight}px`);
+const bgHeight = computed(() => `${props.items.length * itemHeight}px`);
 
 const pinnedHeaders = ref<Header[]>([]);
 const viewportHeaders = ref<Header[]>([]);
@@ -93,12 +99,12 @@ const startIndex = computed(() =>
 );
 const endIndex = computed(() =>
   Math.min(
-    items.length,
+    props.items.length,
     Math.ceil((scrollY.value + viewportHeight.value) / itemHeight) + 10
   )
 );
 const visibleItems = computed(() =>
-  items.slice(startIndex.value, endIndex.value)
+  props.items.slice(startIndex.value, endIndex.value)
 );
 
 function ensureCellVisible(row: number, col: number) {
@@ -164,7 +170,7 @@ function handleKeyDown(event: KeyboardEvent) {
       break;
     case "ArrowDown":
       event.preventDefault();
-      newRow = Math.min(items.length - 1, newRow + 1);
+      newRow = Math.min(props.items.length - 1, newRow + 1);
       break;
     case "ArrowLeft":
       event.preventDefault();
@@ -221,7 +227,7 @@ function removeListeners() {
 }
 
 onMounted(() => {
-  viewportHeaders.value = headers;
+  viewportHeaders.value = props.headers;
   if (mainRef.value) {
     viewportHeight.value = mainRef.value.clientHeight;
     mainRef.value.focus();
@@ -315,7 +321,7 @@ const toggleDarkMode = () => {
             <div
               :style="{
                 paddingTop: startIndex * itemHeight + 'px',
-                paddingBottom: (items.length - endIndex) * itemHeight + 'px',
+                paddingBottom: (props.items.length - endIndex) * itemHeight + 'px',
               }"
             >
               <div
@@ -356,7 +362,7 @@ const toggleDarkMode = () => {
             <div
               :style="{
                 paddingTop: startIndex * itemHeight + 'px',
-                paddingBottom: (items.length - endIndex) * itemHeight + 'px',
+                paddingBottom: (props.items.length - endIndex) * itemHeight + 'px',
               }"
             >
               <div
