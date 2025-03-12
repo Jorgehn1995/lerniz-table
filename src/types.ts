@@ -1,8 +1,15 @@
+export interface Option {
+  text: string;
+  value: any;
+}
+
 export interface Header {
   text: string;
   field: string;
+  pinned?: boolean;
   type?: "text" | "number";
   modify?: boolean;
+  options?: Option[];
   width?: number;
   searchable?: boolean;
   sortable?: boolean;

@@ -185,40 +185,42 @@ function handleDocumentClick(event: MouseEvent) {
 }
 
 function ensureCellVisible(row: number, col: number) {
-  const rowTop = row * itemHeight;
-  const rowBottom = (row + 1) * itemHeight;
-  const currentScrollY = scrollY.value;
-  const viewportHeightVal = viewportHeight.value;
+  nextTick(() => {
+    const rowTop = row * itemHeight;
+    const rowBottom = (row + 1) * itemHeight;
+    const currentScrollY = scrollY.value;
+    const viewportHeightVal = viewportHeight.value;
 
-  if (rowTop < currentScrollY) {
-    mainRef.value?.scrollTo({ top: rowTop });
-  } else if (rowBottom > currentScrollY + viewportHeightVal) {
-    mainRef.value?.scrollTo({ top: rowBottom - viewportHeightVal });
-  }
+    if (rowTop < currentScrollY) {
+      mainRef.value?.scrollTo({ top: rowTop, behavior: 'smooth' });
+    } else if (rowBottom > currentScrollY + viewportHeightVal) {
+      mainRef.value?.scrollTo({ top: rowBottom - viewportHeightVal, behavior: 'smooth' });
+    }
 
-  if (col === 0) return;
+    if (col === 0) return;
 
-  const totalPinned = pinnedHeaders.value.length;
-  if (col <= totalPinned) return;
+    const totalPinned = pinnedHeaders.value.length;
+    if (col <= totalPinned) return;
 
-  const viewportColIndex = col - totalPinned - 1;
-  if (viewportColIndex < 0 || viewportColIndex >= viewportHeaders.value.length)
-    return;
+    const viewportColIndex = col - totalPinned - 1;
+    if (viewportColIndex < 0 || viewportColIndex >= viewportHeaders.value.length)
+      return;
 
-  let start = 0;
-  for (let i = 0; i < viewportColIndex; i++) {
-    start += viewportHeaders.value[i].width || 0;
-  }
-  const end = start + (viewportHeaders.value[viewportColIndex].width || 0);
+    let start = 0;
+    for (let i = 0; i < viewportColIndex; i++) {
+      start += viewportHeaders.value[i].width || 0;
+    }
+    const end = start + (viewportHeaders.value[viewportColIndex].width || 0);
 
-  const viewportWidth = viewportRef.value?.clientWidth || 0;
-  const currentScrollX = scrollX.value;
+    const viewportWidth = viewportRef.value?.clientWidth || 0;
+    const currentScrollX = scrollX.value;
 
-  if (start < currentScrollX) {
-    viewportRef.value?.scrollTo({ left: start });
-  } else if (end > currentScrollX + viewportWidth) {
-    viewportRef.value?.scrollTo({ left: end - viewportWidth });
-  }
+    if (start < currentScrollX) {
+      viewportRef.value?.scrollTo({ left: start, behavior: 'smooth' });
+    } else if (end > currentScrollX + viewportWidth) {
+      viewportRef.value?.scrollTo({ left: end - viewportWidth, behavior: 'smooth' });
+    }
+  });
 }
 
 function handleCellClick(rowIndex: number, colIndex: number) {
@@ -260,11 +262,9 @@ function handleKeyDown(event: KeyboardEvent) {
       return;
   }
 
-  if (newRow !== selectedRow.value || newCol !== selectedCol.value) {
-    selectedRow.value = newRow;
-    selectedCol.value = newCol;
-    nextTick(() => ensureCellVisible(newRow, newCol));
-  }
+  selectedRow.value = newRow;
+  selectedCol.value = newCol;
+  ensureCellVisible(newRow, newCol);
 }
 
 const enterSelected = (row: number, col: number) => {
@@ -312,8 +312,6 @@ onMounted(() => {
   document.addEventListener('click', handleClickOutside);
   document.addEventListener('scroll', () => {
     if (showSortMenu.value) showSortMenu.value = false;
-    selectedRow.value = -1;
-    selectedCol.value = -1;
   }, true);
 });
 
@@ -322,8 +320,6 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
   document.removeEventListener('scroll', () => {
     if (showSortMenu.value) showSortMenu.value = false;
-    selectedRow.value = -1;
-    selectedCol.value = -1;
   }, true);
 });
 
@@ -333,24 +329,15 @@ function handleClickOutside(event: MouseEvent) {
   // Close if click was on scrollbar
   if (event.target === document.documentElement || event.target === document.body) {
     showSortMenu.value = false;
-    selectedRow.value = -1;
-    selectedCol.value = -1;
     return;
   }
 
   const menu = document.querySelector('.sort-menu');
   const isClickInsideMenu = menu?.contains(target);
   const isClickOnHeader = target.closest('.header-cell');
-  const isClickInWrapped = target.closest('.wrapped');
 
   if (!isClickInsideMenu && !isClickOnHeader) {
     showSortMenu.value = false;
-  }
-
-  // Deselect cell if click is outside wrapped and menu
-  if (!isClickInWrapped && !isClickInsideMenu) {
-    selectedRow.value = -1;
-    selectedCol.value = -1;
   }
 }
 
