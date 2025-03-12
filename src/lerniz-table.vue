@@ -1,13 +1,13 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="T extends Record<string, string | number | null>">
 import { ref, computed, onMounted, onUnmounted, nextTick, defineProps } from "vue";
 import { Header, TableItem } from "./types";
 
-export interface LernizTableProps<T extends Record<string, any>> {
+export interface LernizTableProps<T extends Record<string, string | number | null>> {
   items: T[];
   headers: Header[];
 }
 
-const props = defineProps<LernizTableProps<Record<string, any>>>();
+const props = defineProps<LernizTableProps<T>>();
 
 const itemHeight = 35;
 
@@ -15,6 +15,13 @@ const hoveredRowIndex = ref(-1);
 const selectedRow = ref(-1);
 const selectedCol = ref(-1);
 const isDarkMode = ref(false);
+
+// Sorting state
+const sortField = ref<string | null>(null);
+const sortDirection = ref<'asc' | 'desc' | null>(null);
+const showSortMenu = ref(false);
+const sortMenuPosition = ref({ x: 0, y: 0 });
+const activeHeader = ref<Header | null>(null);
 
 const bgHeight = computed(() => `${props.items.length * itemHeight}px`);
 
@@ -103,9 +110,70 @@ const endIndex = computed(() =>
     Math.ceil((scrollY.value + viewportHeight.value) / itemHeight) + 10
   )
 );
+
+// Computed sorted items
+const sortedItems = computed(() => {
+  if (!sortField.value || !sortDirection.value) return props.items;
+
+  return [...props.items].sort((a: T, b: T) => {
+    const header = props.headers.find(h => h.field === sortField.value);
+    if (!header || !sortField.value) return 0;
+
+    const field = sortField.value;
+    const aVal = field in a ? a[field] : null;
+    const bVal = field in b ? b[field] : null;
+
+    // Handle null/empty values
+    if (aVal === null || aVal === undefined || aVal === '') {
+      return -1;
+    }
+    if (bVal === null || bVal === undefined || bVal === '') {
+      return 1;
+    }
+
+    if (header.type === 'number') {
+      return sortDirection.value === 'asc' 
+        ? Number(aVal) - Number(bVal)
+        : Number(bVal) - Number(aVal);
+    }
+
+    // Default to text comparison
+    const aStr = String(aVal).toLowerCase();
+    const bStr = String(bVal).toLowerCase();
+    return sortDirection.value === 'asc'
+      ? aStr.localeCompare(bStr)
+      : bStr.localeCompare(aStr);
+  });
+});
+
 const visibleItems = computed(() =>
-  props.items.slice(startIndex.value, endIndex.value)
+  sortedItems.value.slice(startIndex.value, endIndex.value)
 );
+
+// Sort menu handling
+function handleHeaderClick(event: MouseEvent, header: Header) {
+  event.stopPropagation();
+  activeHeader.value = header;
+  sortMenuPosition.value = {
+    x: event.clientX,
+    y: event.clientY
+  };
+  showSortMenu.value = true;
+}
+
+function handleSort(direction: 'asc' | 'desc') {
+  if (!activeHeader.value) return;
+  sortField.value = activeHeader.value.field;
+  sortDirection.value = direction;
+  showSortMenu.value = false;
+}
+
+function handleDocumentClick(event: MouseEvent) {
+  const target = event.target as HTMLElement;
+  if (!target.closest('.sort-menu') && !target.closest('.header-cell')) {
+    showSortMenu.value = false;
+  }
+}
 
 function ensureCellVisible(row: number, col: number) {
   const rowTop = row * itemHeight;
@@ -149,13 +217,6 @@ function handleCellClick(rowIndex: number, colIndex: number) {
   selectedCol.value = colIndex;
 }
 
-function handleDocumentClick(event: MouseEvent) {
-  if (!mainRef.value?.contains(event.target as Node)) {
-    selectedRow.value = -1;
-    selectedCol.value = -1;
-  }
-}
-
 function handleKeyDown(event: KeyboardEvent) {
   const { key } = event;
   const totalCols =
@@ -170,7 +231,7 @@ function handleKeyDown(event: KeyboardEvent) {
       break;
     case "ArrowDown":
       event.preventDefault();
-      newRow = Math.min(props.items.length - 1, newRow + 1);
+      newRow = Math.min(sortedItems.value.length - 1, newRow + 1);
       break;
     case "ArrowLeft":
       event.preventDefault();
@@ -273,7 +334,7 @@ const toggleDarkMode = () => {
           }"
         >
           <div class="row">
-            <div class="cell firstColumn header-cell">#</div>
+            <div class="cell firstColumn header-cell"></div>
             <div
               class="cell header-cell"
               v-for="(header, colIndex) in pinnedHeaders"
@@ -282,8 +343,14 @@ const toggleDarkMode = () => {
                 width: header.width + 'px',
                 minWidth: header.width + 'px',
               }"
+              @click="handleHeaderClick($event, header)"
             >
-              {{ header.text }}
+              <div class="header-content">
+                {{ header.text }}
+                <span v-if="sortField === header.field" class="sort-indicator">
+                  {{ sortDirection === 'asc' ? '↑' : '↓' }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -299,8 +366,14 @@ const toggleDarkMode = () => {
                 width: header.width + 'px',
                 minWidth: header.width + 'px',
               }"
+              @click="handleHeaderClick($event, header)"
             >
-              {{ header.text }}
+              <div class="header-content">
+                {{ header.text }}
+                <span v-if="sortField === header.field" class="sort-indicator">
+                  {{ sortDirection === 'asc' ? '↑' : '↓' }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -321,7 +394,7 @@ const toggleDarkMode = () => {
             <div
               :style="{
                 paddingTop: startIndex * itemHeight + 'px',
-                paddingBottom: (props.items.length - endIndex) * itemHeight + 'px',
+                paddingBottom: (sortedItems.length - endIndex) * itemHeight + 'px',
               }"
             >
               <div
@@ -362,7 +435,7 @@ const toggleDarkMode = () => {
             <div
               :style="{
                 paddingTop: startIndex * itemHeight + 'px',
-                paddingBottom: (props.items.length - endIndex) * itemHeight + 'px',
+                paddingBottom: (sortedItems.length - endIndex) * itemHeight + 'px',
               }"
             >
               <div
@@ -411,6 +484,25 @@ const toggleDarkMode = () => {
           Scroll vertical: {{ scrollY }} px | Scroll horizontal:
           {{ scrollX }} px | Row hover: {{ hoveredRowIndex }}
         </div>
+      </div>
+    </div>
+
+    <!-- Sort Menu -->
+    <div
+      v-if="showSortMenu"
+      class="sort-menu"
+      :style="{
+        left: sortMenuPosition.x + 'px',
+        top: sortMenuPosition.y + 'px'
+      }"
+    >
+      <div class="sort-menu-item" @click="handleSort('asc')">
+        <span class="sort-icon">↑</span>
+        Ordenar ascendente
+      </div>
+      <div class="sort-menu-item" @click="handleSort('desc')">
+        <span class="sort-icon">↓</span>
+        Ordenar descendente
       </div>
     </div>
   </div>
@@ -499,12 +591,25 @@ const toggleDarkMode = () => {
 }
 
 .header-cell {
+  position: relative;
+  cursor: pointer;
+  user-select: none;
   background: var(--header-bg) !important;
   color: var(--header-text) !important;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.8rem;
   letter-spacing: 0.5px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sort-indicator {
+  font-size: 12px;
 }
 
 .row {
@@ -585,6 +690,45 @@ const toggleDarkMode = () => {
 
 .dark-mode .selected {
   outline-color: #818cf8;
+}
+
+.sort-menu {
+  position: fixed;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  min-width: 180px;
+  transform: translate(-50%, 10px);
+}
+
+.dark-mode .sort-menu {
+  background: #2d2d2d;
+  border-color: #404040;
+}
+
+.sort-menu-item {
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.sort-menu-item:hover {
+  background-color: #f5f5f5;
+}
+
+.dark-mode .sort-menu-item:hover {
+  background-color: #404040;
+}
+
+.sort-icon {
+  font-size: 14px;
+  width: 16px;
+  text-align: center;
 }
 
 ::-webkit-scrollbar {

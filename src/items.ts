@@ -1,7 +1,7 @@
 import type { Header } from "./types";
 const items = [
   {
-    name: "Ejemplo",
+    name: "Ejemplo a",
     a: null,
     b: null,
     c: null,
@@ -25,7 +25,7 @@ const items = [
     u: null,
   },
   {
-    name: "Ejemplo",
+    name: "Ejemplo b",
     a: null,
     b: null,
     c: null,
@@ -49,7 +49,7 @@ const items = [
     u: null,
   },
   {
-    name: "Ejemplo",
+    name: "Ejemplo c",
     a: null,
     b: null,
     c: null,

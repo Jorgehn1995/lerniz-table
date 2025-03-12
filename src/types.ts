@@ -12,4 +12,4 @@ export interface Header {
   isHidden?: boolean;
 }
 
-export type TableItem = Record<string, any>;
+export type TableItem = Record<string, string | number | null>;
