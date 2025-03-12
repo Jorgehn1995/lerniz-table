@@ -20,7 +20,7 @@ const isDarkMode = ref(false);
 const sortField = ref<string | null>(null);
 const sortDirection = ref<'asc' | 'desc' | null>(null);
 const showSortMenu = ref(false);
-const sortMenuPosition = ref({ x: 0, y: 0 });
+const sortMenuPosition = ref<{ x: number; y: number }>({ x: 0, y: 0 });
 const activeHeader = ref<Header | null>(null);
 
 const bgHeight = computed(() => `${props.items.length * itemHeight}px`);
@@ -124,22 +124,16 @@ const sortedItems = computed(() => {
     const bVal = field in b ? b[field] : null;
 
     // Handle null/empty values
-    if (aVal === null || aVal === undefined || aVal === '') {
-      return -1;
-    }
-    if (bVal === null || bVal === undefined || bVal === '') {
-      return 1;
-    }
+    const aStr = aVal === null || aVal === undefined || aVal === '' ? ' ' : String(aVal);
+    const bStr = bVal === null || bVal === undefined || bVal === '' ? ' ' : String(bVal);
 
     if (header.type === 'number') {
       return sortDirection.value === 'asc' 
-        ? Number(aVal) - Number(bVal)
-        : Number(bVal) - Number(aVal);
+        ? Number(aVal === null || aVal === undefined ? 0 : aVal) - Number(bVal === null || bVal === undefined ? 0 : bVal)
+        : Number(bVal === null || bVal === undefined ? 0 : bVal) - Number(aVal === null || aVal === undefined ? 0 : aVal);
     }
 
     // Default to text comparison
-    const aStr = String(aVal).toLowerCase();
-    const bStr = String(bVal).toLowerCase();
     return sortDirection.value === 'asc'
       ? aStr.localeCompare(bStr)
       : bStr.localeCompare(aStr);
@@ -152,12 +146,16 @@ const visibleItems = computed(() =>
 
 // Sort menu handling
 function handleHeaderClick(event: MouseEvent, header: Header) {
-  event.stopPropagation();
-  activeHeader.value = header;
+  const headerElement = event.target as HTMLElement;
+  const rect = headerElement.getBoundingClientRect();
+  
+  // Update menu position to be below the header
   sortMenuPosition.value = {
-    x: event.clientX,
-    y: event.clientY
+    x: rect.left,
+    y: rect.bottom
   };
+  
+  activeHeader.value = header;
   showSortMenu.value = true;
 }
 
@@ -495,6 +493,7 @@ const toggleDarkMode = () => {
         left: sortMenuPosition.x + 'px',
         top: sortMenuPosition.y + 'px'
       }"
+      @click.stop
     >
       <div class="sort-menu-item" @click="handleSort('asc')">
         <span class="sort-icon">↑</span>
@@ -693,14 +692,15 @@ const toggleDarkMode = () => {
 }
 
 .sort-menu {
-  position: fixed;
+  position: absolute;
   background: white;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
+  padding: 8px 0;
+  min-width: 150px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   z-index: 1000;
-  min-width: 180px;
-  transform: translate(-50%, 10px);
+  margin-top: 2px; /* Small gap between header and menu */
 }
 
 .dark-mode .sort-menu {
@@ -710,10 +710,10 @@ const toggleDarkMode = () => {
 
 .sort-menu-item {
   padding: 8px 16px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
-  cursor: pointer;
   transition: background-color 0.2s;
 }
 
