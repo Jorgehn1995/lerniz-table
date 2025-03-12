@@ -146,6 +146,7 @@ const visibleItems = computed(() =>
 
 // Sort menu handling
 function handleHeaderClick(event: MouseEvent, header: Header) {
+  event.stopPropagation(); // Prevent event from bubbling to document
   const headerElement = event.target as HTMLElement;
   const rect = headerElement.getBoundingClientRect();
   const windowWidth = window.innerWidth;
@@ -171,10 +172,9 @@ function handleHeaderClick(event: MouseEvent, header: Header) {
 }
 
 function handleSort(direction: 'asc' | 'desc') {
-  if (!activeHeader.value) return;
-  sortField.value = activeHeader.value.field;
   sortDirection.value = direction;
-  showSortMenu.value = false;
+  sortField.value = activeHeader.value?.field || null;
+  showSortMenu.value = false; // Close menu after selection
 }
 
 function handleDocumentClick(event: MouseEvent) {
@@ -309,11 +309,50 @@ onMounted(() => {
   }
 
   addListeners();
+  document.addEventListener('click', handleClickOutside);
+  document.addEventListener('scroll', () => {
+    if (showSortMenu.value) showSortMenu.value = false;
+    selectedRow.value = -1;
+    selectedCol.value = -1;
+  }, true);
 });
 
 onUnmounted(() => {
   removeListeners();
+  document.removeEventListener('click', handleClickOutside);
+  document.removeEventListener('scroll', () => {
+    if (showSortMenu.value) showSortMenu.value = false;
+    selectedRow.value = -1;
+    selectedCol.value = -1;
+  }, true);
 });
+
+function handleClickOutside(event: MouseEvent) {
+  const target = event.target as HTMLElement;
+  
+  // Close if click was on scrollbar
+  if (event.target === document.documentElement || event.target === document.body) {
+    showSortMenu.value = false;
+    selectedRow.value = -1;
+    selectedCol.value = -1;
+    return;
+  }
+
+  const menu = document.querySelector('.sort-menu');
+  const isClickInsideMenu = menu?.contains(target);
+  const isClickOnHeader = target.closest('.header-cell');
+  const isClickInWrapped = target.closest('.wrapped');
+
+  if (!isClickInsideMenu && !isClickOnHeader) {
+    showSortMenu.value = false;
+  }
+
+  // Deselect cell if click is outside wrapped and menu
+  if (!isClickInWrapped && !isClickInsideMenu) {
+    selectedRow.value = -1;
+    selectedCol.value = -1;
+  }
+}
 
 const toggleDarkMode = () => {
   isDarkMode.value = !isDarkMode.value;
