@@ -1,8 +1,21 @@
-<script setup lang="ts" generic="T extends Record<string, string | number | null>">
-import { ref, computed, onMounted, onUnmounted, nextTick, defineProps } from "vue";
+<script
+  setup
+  lang="ts"
+  generic="T extends Record<string, string | number | null>"
+>
+import {
+  ref,
+  computed,
+  onMounted,
+  onUnmounted,
+  nextTick,
+  defineProps,
+} from "vue";
 import { Header, TableItem } from "./types";
 
-export interface LernizTableProps<T extends Record<string, string | number | null>> {
+export interface LernizTableProps<
+  T extends Record<string, string | number | null>
+> {
   items: T[];
   headers: Header[];
 }
@@ -18,7 +31,7 @@ const isDarkMode = ref(false);
 
 // Sorting state
 const sortField = ref<string | null>(null);
-const sortDirection = ref<'asc' | 'desc' | null>(null);
+const sortDirection = ref<"asc" | "desc" | null>(null);
 const showSortMenu = ref(false);
 const sortMenuPosition = ref<{ x: number; y: number }>({ x: 0, y: 0 });
 const activeHeader = ref<Header | null>(null);
@@ -26,14 +39,20 @@ const activeHeader = ref<Header | null>(null);
 const bgHeight = computed(() => `${props.items.length * itemHeight}px`);
 
 const headers = ref<Header[]>([]);
-const pinnedHeaders = computed(() => headers.value.filter(h => h.isPinnedLeft));
-const viewportHeaders = computed(() => headers.value.filter(h => !h.isPinnedLeft));
+const pinnedHeaders = computed(() =>
+  headers.value.filter((h) => h.isPinnedLeft)
+);
+const viewportHeaders = computed(() =>
+  headers.value.filter((h) => !h.isPinnedLeft)
+);
 
-const pinnedLeftWidth = computed(() => 
-  50 + pinnedHeaders.value.reduce(
-    (acumulador, elemento) => acumulador + (elemento.width || 0),
-    0
-  )
+const pinnedLeftWidth = computed(
+  () =>
+    50 +
+    pinnedHeaders.value.reduce(
+      (acumulador, elemento) => acumulador + (elemento.width || 0),
+      0
+    )
 );
 
 const togglePinLeft = (header: Header) => {
@@ -122,7 +141,7 @@ const sortedItems = computed(() => {
   if (!sortField.value || !sortDirection.value) return props.items;
 
   return [...props.items].sort((a: T, b: T) => {
-    const header = headers.value.find(h => h.field === sortField.value);
+    const header = headers.value.find((h) => h.field === sortField.value);
     if (!header || !sortField.value) return 0;
 
     const field = sortField.value;
@@ -130,17 +149,21 @@ const sortedItems = computed(() => {
     const bVal = field in b ? b[field] : null;
 
     // Handle null/empty values
-    const aStr = aVal === null || aVal === undefined || aVal === '' ? ' ' : String(aVal);
-    const bStr = bVal === null || bVal === undefined || bVal === '' ? ' ' : String(bVal);
+    const aStr =
+      aVal === null || aVal === undefined || aVal === "" ? " " : String(aVal);
+    const bStr =
+      bVal === null || bVal === undefined || bVal === "" ? " " : String(bVal);
 
-    if (header.type === 'number') {
-      return sortDirection.value === 'asc' 
-        ? Number(aVal === null || aVal === undefined ? 0 : aVal) - Number(bVal === null || bVal === undefined ? 0 : bVal)
-        : Number(bVal === null || bVal === undefined ? 0 : bVal) - Number(aVal === null || aVal === undefined ? 0 : aVal);
+    if (header.type === "number") {
+      return sortDirection.value === "asc"
+        ? Number(aVal === null || aVal === undefined ? 0 : aVal) -
+            Number(bVal === null || bVal === undefined ? 0 : bVal)
+        : Number(bVal === null || bVal === undefined ? 0 : bVal) -
+            Number(aVal === null || aVal === undefined ? 0 : aVal);
     }
 
     // Default to text comparison
-    return sortDirection.value === 'asc'
+    return sortDirection.value === "asc"
       ? aStr.localeCompare(bStr)
       : bStr.localeCompare(aStr);
   });
@@ -156,28 +179,28 @@ function handleHeaderClick(event: MouseEvent, header: Header) {
   const headerElement = event.target as HTMLElement;
   const rect = headerElement.getBoundingClientRect();
   const windowWidth = window.innerWidth;
-  
+
   // Calculate menu position
   let x = rect.left;
   const y = rect.bottom;
-  
+
   // Get menu width (or use default if not yet rendered)
   const menuWidth = 200; // Default min-width from CSS
-  
+
   // Adjust x position if menu would overflow window
   if (x + menuWidth > windowWidth) {
     x = windowWidth - menuWidth - 10; // 10px padding from window edge
   }
-  
+
   // Ensure x is never negative
   x = Math.max(10, x); // At least 10px from left edge
-  
+
   sortMenuPosition.value = { x, y };
   activeHeader.value = header;
   showSortMenu.value = true;
 }
 
-function handleSort(direction: 'asc' | 'desc') {
+function handleSort(direction: "asc" | "desc") {
   sortDirection.value = direction;
   sortField.value = activeHeader.value?.field || null;
   showSortMenu.value = false; // Close menu after selection
@@ -185,7 +208,7 @@ function handleSort(direction: 'asc' | 'desc') {
 
 function handleDocumentClick(event: MouseEvent) {
   const target = event.target as HTMLElement;
-  if (!target.closest('.sort-menu') && !target.closest('.header-cell')) {
+  if (!target.closest(".sort-menu") && !target.closest(".header-cell")) {
     showSortMenu.value = false;
   }
 }
@@ -198,9 +221,12 @@ function ensureCellVisible(row: number, col: number) {
     const viewportHeightVal = viewportHeight.value;
 
     if (rowTop < currentScrollY) {
-      mainRef.value?.scrollTo({ top: rowTop, behavior: 'smooth' });
+      mainRef.value?.scrollTo({ top: rowTop, behavior: "smooth" });
     } else if (rowBottom > currentScrollY + viewportHeightVal) {
-      mainRef.value?.scrollTo({ top: rowBottom - viewportHeightVal, behavior: 'smooth' });
+      mainRef.value?.scrollTo({
+        top: rowBottom - viewportHeightVal,
+        behavior: "smooth",
+      });
     }
 
     if (col === 0) return;
@@ -209,7 +235,10 @@ function ensureCellVisible(row: number, col: number) {
     if (col <= totalPinned) return;
 
     const viewportColIndex = col - totalPinned - 1;
-    if (viewportColIndex < 0 || viewportColIndex >= viewportHeaders.value.length)
+    if (
+      viewportColIndex < 0 ||
+      viewportColIndex >= viewportHeaders.value.length
+    )
       return;
 
     let start = 0;
@@ -222,9 +251,12 @@ function ensureCellVisible(row: number, col: number) {
     const currentScrollX = scrollX.value;
 
     if (start < currentScrollX) {
-      viewportRef.value?.scrollTo({ left: start, behavior: 'smooth' });
+      viewportRef.value?.scrollTo({ left: start, behavior: "smooth" });
     } else if (end > currentScrollX + viewportWidth) {
-      viewportRef.value?.scrollTo({ left: end - viewportWidth, behavior: 'smooth' });
+      viewportRef.value?.scrollTo({
+        left: end - viewportWidth,
+        behavior: "smooth",
+      });
     }
   });
 }
@@ -304,7 +336,7 @@ function removeListeners() {
 
 onMounted(() => {
   headers.value = props.headers;
-  
+
   if (mainRef.value) {
     viewportHeight.value = mainRef.value.clientHeight;
     mainRef.value.focus();
@@ -316,32 +348,43 @@ onMounted(() => {
   }
 
   addListeners();
-  document.addEventListener('click', handleClickOutside);
-  document.addEventListener('scroll', () => {
-    if (showSortMenu.value) showSortMenu.value = false;
-  }, true);
+  document.addEventListener("click", handleClickOutside);
+  document.addEventListener(
+    "scroll",
+    () => {
+      if (showSortMenu.value) showSortMenu.value = false;
+    },
+    true
+  );
 });
 
 onUnmounted(() => {
   removeListeners();
-  document.removeEventListener('click', handleClickOutside);
-  document.removeEventListener('scroll', () => {
-    if (showSortMenu.value) showSortMenu.value = false;
-  }, true);
+  document.removeEventListener("click", handleClickOutside);
+  document.removeEventListener(
+    "scroll",
+    () => {
+      if (showSortMenu.value) showSortMenu.value = false;
+    },
+    true
+  );
 });
 
 function handleClickOutside(event: MouseEvent) {
   const target = event.target as HTMLElement;
-  
+
   // Close if click was on scrollbar
-  if (event.target === document.documentElement || event.target === document.body) {
+  if (
+    event.target === document.documentElement ||
+    event.target === document.body
+  ) {
     showSortMenu.value = false;
     return;
   }
 
-  const menu = document.querySelector('.sort-menu');
+  const menu = document.querySelector(".sort-menu");
   const isClickInsideMenu = menu?.contains(target);
-  const isClickOnHeader = target.closest('.header-cell');
+  const isClickOnHeader = target.closest(".header-cell");
 
   if (!isClickInsideMenu && !isClickOnHeader) {
     showSortMenu.value = false;
@@ -390,7 +433,7 @@ const toggleDarkMode = () => {
               <div class="header-content">
                 {{ header.text }}
                 <span v-if="sortField === header.field" class="sort-indicator">
-                  {{ sortDirection === 'asc' ? '↑' : '↓' }}
+                  {{ sortDirection === "asc" ? "↑" : "↓" }}
                 </span>
               </div>
             </div>
@@ -413,7 +456,7 @@ const toggleDarkMode = () => {
               <div class="header-content">
                 {{ header.text }}
                 <span v-if="sortField === header.field" class="sort-indicator">
-                  {{ sortDirection === 'asc' ? '↑' : '↓' }}
+                  {{ sortDirection === "asc" ? "↑" : "↓" }}
                 </span>
               </div>
             </div>
@@ -436,7 +479,8 @@ const toggleDarkMode = () => {
             <div
               :style="{
                 paddingTop: startIndex * itemHeight + 'px',
-                paddingBottom: (sortedItems.length - endIndex) * itemHeight + 'px',
+                paddingBottom:
+                  (sortedItems.length - endIndex) * itemHeight + 'px',
               }"
             >
               <div
@@ -477,7 +521,8 @@ const toggleDarkMode = () => {
             <div
               :style="{
                 paddingTop: startIndex * itemHeight + 'px',
-                paddingBottom: (sortedItems.length - endIndex) * itemHeight + 'px',
+                paddingBottom:
+                  (sortedItems.length - endIndex) * itemHeight + 'px',
               }"
             >
               <div
@@ -539,6 +584,9 @@ const toggleDarkMode = () => {
         top: sortMenuPosition.y + 'px',
       }"
     >
+      <div class="sort-menu-title">
+        {{ activeHeader?.text }}
+      </div>
       <div class="sort-menu-item" @click="handleSort('asc')">
         <span class="sort-icon">↑</span>
         Orden Ascendente
@@ -548,16 +596,40 @@ const toggleDarkMode = () => {
         Orden Descendente
       </div>
       <div class="sort-menu-divider"></div>
-      <div 
-        class="sort-menu-item" 
+      <div
+        class="sort-menu-item"
         @click="activeHeader && togglePinLeft(activeHeader)"
       >
         <span class="sort-icon">📌</span>
-        {{ activeHeader?.isPinnedLeft ? 'Desfijar de la izquierda' : 'Fijar a la izquierda' }}
+        {{
+          activeHeader?.isPinnedLeft
+            ? "Desfijar de la izquierda"
+            : "Fijar a la izquierda"
+        }}
       </div>
+      <slot name="custom-menu-items" :header="activeHeader"></slot>
     </div>
   </div>
 </template>
+<style>
+.sort-menu-title {
+  font-size: 0.8rem;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s;
+}
+.sort-menu-item {
+  font-size: 0.8rem;
+  padding: 8px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s;
+}
+</style>
 
 <style scoped>
 .component-container {
@@ -665,7 +737,7 @@ const toggleDarkMode = () => {
 
 .row {
   display: flex;
-  height: v-bind(itemHeight + 'px');
+  height: v-bind(itemHeight + "px");
   transition: background-color 0.2s ease;
 }
 
@@ -674,7 +746,7 @@ const toggleDarkMode = () => {
 }
 
 .cell {
-  height: v-bind(itemHeight + 'px');
+  height: v-bind(itemHeight + "px");
   padding: 0 0.8rem;
   display: flex;
   align-items: center;
@@ -759,16 +831,6 @@ const toggleDarkMode = () => {
 .dark-mode .sort-menu {
   background: #2d2d2d;
   border-color: #404040;
-}
-
-.sort-menu-item {
-  font-size: 0.8rem;
-  padding: 8px 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: background-color 0.2s;
 }
 
 .sort-menu-item:hover {
