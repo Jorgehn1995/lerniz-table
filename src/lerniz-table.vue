@@ -9,9 +9,7 @@ const hoveredRowIndex = ref(-1);
 const selectedRow = ref(-1);
 const selectedCol = ref(-1);
 
-const bgHeight = computed(() => {
-  return items.length * itemHeight + "px";
-});
+const bgHeight = computed(() => `${items.length * itemHeight}px`);
 
 const pinnedHeaders = ref<Header[]>([]);
 const viewportHeaders = ref<Header[]>([]);
@@ -27,18 +25,7 @@ const viewportHeaderRef = ref<HTMLElement | null>(null);
 
 let rafId: number | null = null;
 
-function getScrollbarWidth() {
-  const outer = document.createElement("div");
-  outer.style.visibility = "hidden";
-  outer.style.overflow = "scroll";
-  outer.style.width = "100px";
-  outer.style.position = "absolute";
-  document.body.appendChild(outer);
-  const scrollbarWidth = outer.offsetWidth - outer.clientWidth;
-  document.body.removeChild(outer);
-  return scrollbarWidth;
-}
-
+/** Cancela un requestAnimationFrame activo si existe */
 function cancelRafIfNeeded() {
   if (rafId !== null) {
     cancelAnimationFrame(rafId);
@@ -46,28 +33,44 @@ function cancelRafIfNeeded() {
   }
 }
 
+/**
+ * Maneja el scroll de cualquier elemento, asignando scrollX o scrollY según corresponda
+ * y sincronizando el scroll en el otro elemento si es necesario.
+ * @param {HTMLElement | null} sourceRef - Referencia del elemento que emite el scroll
+ * @param {'x' | 'y'} axis - Eje que se va a sincronizar (scrollLeft o scrollTop)
+ * @param {HTMLElement | null} [syncRef] - Opcional. Si se pasa, su scroll se sincroniza
+ */
+function handleScroll(sourceRef: HTMLElement | null, axis: "x" | "y", syncRef?: HTMLElement | null) {
+  cancelRafIfNeeded();
+  rafId = requestAnimationFrame(() => {
+    if (!sourceRef) return;
+    const value = axis === "y" ? sourceRef.scrollTop : sourceRef.scrollLeft;
+
+    if (axis === "y") {
+      scrollY.value = value;
+    } else {
+      scrollX.value = value;
+      if (syncRef) {
+        syncRef.scrollLeft = value;
+      }
+    }
+  });
+}
+
+// Handlers específicos que reutilizan la misma función:
 function handleMainScroll() {
-  cancelRafIfNeeded();
-  rafId = requestAnimationFrame(() => {
-    if (mainRef.value) {
-      scrollY.value = mainRef.value.scrollTop;
-    }
-  });
+  handleScroll(mainRef.value, "y");
 }
-
 function handleViewportScroll() {
-  cancelRafIfNeeded();
-  rafId = requestAnimationFrame(() => {
-    if (viewportRef.value && viewportHeaderRef.value) {
-      const x = viewportRef.value.scrollLeft;
-      scrollX.value = x;
-      viewportHeaderRef.value.scrollLeft = x;
-    }
-  });
+  handleScroll(viewportRef.value, "x", viewportHeaderRef.value);
+}
+function handleViewportHeaderScroll() {
+  handleScroll(viewportHeaderRef.value, "x", viewportRef.value);
 }
 
+// Fija la primera columna como "pinned"
 const pinnedFirstColumn = () => {
-  if (viewportHeaders.value.length === 0) return;
+  if (!viewportHeaders.value.length) return;
   pinnedHeaders.value.push(viewportHeaders.value[0]);
   viewportHeaders.value.splice(0, 1);
   pinnedLeftWidth.value =
@@ -78,32 +81,32 @@ const pinnedFirstColumn = () => {
     );
 };
 
-function handleViewportHeaderScroll() {
-  cancelRafIfNeeded();
-  rafId = requestAnimationFrame(() => {
-    if (viewportHeaderRef.value && viewportRef.value) {
-      const x = viewportHeaderRef.value.scrollLeft;
-      scrollX.value = x;
-      viewportRef.value.scrollLeft = x;
-    }
-  });
+/**
+ * Devuelve el ancho del scrollbar.
+ * Si es muy pequeño (<1), forzamos a 8 px para evitar inconsistencias entre navegadores.
+ */
+function getScrollbarWidth() {
+  const outer = document.createElement("div");
+  outer.style.visibility = "hidden";
+  outer.style.overflow = "scroll";
+  outer.style.width = "100px";
+  outer.style.position = "absolute";
+  document.body.appendChild(outer);
+  const scrollbarWidth = outer.offsetWidth - outer.clientWidth;
+  document.body.removeChild(outer);
+  return scrollbarWidth < 1 ? 8 : scrollbarWidth;
 }
 
+// Valores usados para el renderizado "virtual" (ventana)
 const buffer = 5;
-const startIndex = computed(() => {
-  return Math.max(0, Math.floor(scrollY.value / itemHeight) - buffer);
-});
-const endIndex = computed(() => {
-  return Math.min(
-    items.length,
-    Math.ceil((scrollY.value + viewportHeight.value) / itemHeight) + buffer
-  );
-});
-const visibleItems = computed(() => {
-  return items.slice(startIndex.value, endIndex.value);
-});
+const startIndex = computed(() => Math.max(0, Math.floor(scrollY.value / itemHeight) - buffer));
+const endIndex = computed(() =>
+  Math.min(items.length, Math.ceil((scrollY.value + viewportHeight.value) / itemHeight) + buffer)
+);
+const visibleItems = computed(() => items.slice(startIndex.value, endIndex.value));
 
 function ensureCellVisible(row: number, col: number) {
+  // Desplazamiento vertical
   const rowTop = row * itemHeight;
   const rowBottom = (row + 1) * itemHeight;
   const currentScrollY = scrollY.value;
@@ -115,14 +118,15 @@ function ensureCellVisible(row: number, col: number) {
     mainRef.value?.scrollTo({ top: rowBottom - viewportHeightVal });
   }
 
-  if (col === 0) return;
+  // Desplazamiento horizontal
+  if (col === 0) return; // Si es la primera columna (#), ya está siempre visible
 
   const totalPinned = pinnedHeaders.value.length;
-  if (col <= totalPinned) return;
+  if (col <= totalPinned) return; // Si cae en la zona de "pinned", nada especial
 
+  // Índice dentro de las columnas viewport
   const viewportColIndex = col - totalPinned - 1;
-  if (viewportColIndex < 0 || viewportColIndex >= viewportHeaders.value.length)
-    return;
+  if (viewportColIndex < 0 || viewportColIndex >= viewportHeaders.value.length) return;
 
   let start = 0;
   for (let i = 0; i < viewportColIndex; i++) {
@@ -154,8 +158,7 @@ function handleDocumentClick(event: MouseEvent) {
 
 function handleKeyDown(event: KeyboardEvent) {
   const { key } = event;
-  const totalCols =
-    1 + pinnedHeaders.value.length + viewportHeaders.value.length;
+  const totalCols = 1 + pinnedHeaders.value.length + viewportHeaders.value.length;
   let newRow = selectedRow.value;
   let newCol = selectedCol.value;
 
@@ -170,9 +173,8 @@ function handleKeyDown(event: KeyboardEvent) {
       break;
     case "ArrowLeft":
       event.preventDefault();
-      newCol = newCol - 1 == 0 ? 1 : Math.max(0, newCol - 1);
-      console.log(newCol);
-      
+      // Evitamos que se quede en 0 para no chocar con la columna fija de "#"
+      newCol = newCol - 1 === 0 ? 1 : Math.max(0, newCol - 1);
       break;
     case "ArrowRight":
       event.preventDefault();
@@ -195,9 +197,23 @@ function handleKeyDown(event: KeyboardEvent) {
   }
 }
 
-const enterSelected = (row: string | number, col: string | number) => {
+const enterSelected = (row: number, col: number) => {
   console.log(`enter keydown - row: ${row}, col: ${col}`);
 };
+
+function addListeners() {
+  mainRef.value?.addEventListener("scroll", handleMainScroll, { passive: true });
+  viewportRef.value?.addEventListener("scroll", handleViewportScroll, { passive: true });
+  viewportHeaderRef.value?.addEventListener("scroll", handleViewportHeaderScroll, { passive: true });
+  document.addEventListener("click", handleDocumentClick);
+}
+
+function removeListeners() {
+  mainRef.value?.removeEventListener("scroll", handleMainScroll);
+  viewportRef.value?.removeEventListener("scroll", handleViewportScroll);
+  viewportHeaderRef.value?.removeEventListener("scroll", handleViewportHeaderScroll);
+  document.removeEventListener("click", handleDocumentClick);
+}
 
 onMounted(() => {
   viewportHeaders.value = headers;
@@ -206,51 +222,32 @@ onMounted(() => {
     mainRef.value.focus();
   }
 
-  let scrollbarWidth = getScrollbarWidth();
-  if (scrollbarWidth < 1) scrollbarWidth = 8;
+  const scrollbarWidth = getScrollbarWidth();
   if (viewportHeaderRef.value) {
     viewportHeaderRef.value.style.marginRight = `${scrollbarWidth}px`;
   }
 
-  mainRef.value?.addEventListener("scroll", handleMainScroll, {
-    passive: true,
-  });
-  viewportRef.value?.addEventListener("scroll", handleViewportScroll, {
-    passive: true,
-  });
-  viewportHeaderRef.value?.addEventListener(
-    "scroll",
-    handleViewportHeaderScroll,
-    { passive: true }
-  );
-  document.addEventListener("click", handleDocumentClick);
+  addListeners();
 });
 
 onUnmounted(() => {
-  mainRef.value?.removeEventListener("scroll", handleMainScroll);
-  viewportRef.value?.removeEventListener("scroll", handleViewportScroll);
-  viewportHeaderRef.value?.removeEventListener(
-    "scroll",
-    handleViewportHeaderScroll
-  );
-  document.removeEventListener("click", handleDocumentClick);
+  removeListeners();
 });
 </script>
 
 <template>
   <div class="component-container">
-    <button class="pin-button" @click="pinnedFirstColumn()">
+    <button class="pin-button" @click="pinnedFirstColumn">
       <span>📌 Fijar primera columna</span>
     </button>
 
     <div class="wrapped">
+      <!-- Header -->
       <div class="header">
+        <!-- Pinned Header -->
         <div
           class="pinned-left"
-          :style="{
-            width: pinnedLeftWidth + 'px',
-            minWidth: pinnedLeftWidth + 'px',
-          }"
+          :style="{ width: pinnedLeftWidth + 'px', minWidth: pinnedLeftWidth + 'px' }"
         >
           <div class="row">
             <div class="cell firstColumn header-cell">#</div>
@@ -258,25 +255,21 @@ onUnmounted(() => {
               class="cell header-cell"
               v-for="(header, colIndex) in pinnedHeaders"
               :key="header.field"
-              :style="{
-                width: header.width + 'px',
-                minWidth: header.width + 'px',
-              }"
+              :style="{ width: header.width + 'px', minWidth: header.width + 'px' }"
             >
               {{ header.text }}
             </div>
           </div>
         </div>
+
+        <!-- Scrollable Header -->
         <div class="viewport" ref="viewportHeaderRef">
           <div class="row">
             <div
               class="cell header-cell"
               v-for="(header, colIndex) in viewportHeaders"
               :key="header.field"
-              :style="{
-                width: header.width + 'px',
-                minWidth: header.width + 'px',
-              }"
+              :style="{ width: header.width + 'px', minWidth: header.width + 'px' }"
             >
               {{ header.text }}
             </div>
@@ -285,19 +278,21 @@ onUnmounted(() => {
       </div>
 
       <div class="layout">
+        <!-- Cuerpo principal -->
         <div class="main" ref="mainRef" tabindex="0" @keydown="handleKeyDown">
+          <!-- Pinned Column -->
           <div
             class="pinned-left fit"
             :style="{
               width: pinnedLeftWidth + 'px',
               minWidth: pinnedLeftWidth + 'px',
-              height: bgHeight,
+              height: bgHeight
             }"
           >
             <div
               :style="{
                 paddingTop: startIndex * itemHeight + 'px',
-                paddingBottom: (items.length - endIndex) * itemHeight + 'px',
+                paddingBottom: (items.length - endIndex) * itemHeight + 'px'
               }"
             >
               <div
@@ -315,16 +310,13 @@ onUnmounted(() => {
                   class="cell data-cell"
                   v-for="(header, colIndex) in pinnedHeaders"
                   :key="header.field"
-                  :style="{
-                    width: header.width + 'px',
-                    minWidth: header.width + 'px',
-                  }"
+                  :style="{ width: header.width + 'px', minWidth: header.width + 'px' }"
                   @click="handleCellClick(startIndex + i, 1 + colIndex)"
                   @dblclick="enterSelected(startIndex + i, 1 + colIndex)"
                   :class="{
                     selected:
                       selectedRow === startIndex + i &&
-                      selectedCol === 1 + colIndex,
+                      selectedCol === 1 + colIndex
                   }"
                 >
                   {{ item[header.field] }}
@@ -333,11 +325,12 @@ onUnmounted(() => {
             </div>
           </div>
 
+          <!-- Scrollable columns -->
           <div class="viewport" :style="{ height: bgHeight }" ref="viewportRef">
             <div
               :style="{
                 paddingTop: startIndex * itemHeight + 'px',
-                paddingBottom: (items.length - endIndex) * itemHeight + 'px',
+                paddingBottom: (items.length - endIndex) * itemHeight + 'px'
               }"
             >
               <div
@@ -352,10 +345,7 @@ onUnmounted(() => {
                   class="cell data-cell"
                   v-for="(header, colIndex) in viewportHeaders"
                   :key="header.field"
-                  :style="{
-                    width: header.width + 'px',
-                    minWidth: header.width + 'px',
-                  }"
+                  :style="{ width: header.width + 'px', minWidth: header.width + 'px' }"
                   @click="
                     handleCellClick(
                       startIndex + rowIndex,
@@ -371,7 +361,7 @@ onUnmounted(() => {
                   :class="{
                     selected:
                       selectedRow === startIndex + rowIndex &&
-                      selectedCol === 1 + pinnedHeaders.length + colIndex,
+                      selectedCol === 1 + pinnedHeaders.length + colIndex
                   }"
                 >
                   {{ item[header.field] }}
@@ -381,9 +371,10 @@ onUnmounted(() => {
           </div>
         </div>
 
+        <!-- Info de scroll -->
         <div class="scroll-info">
-          Scroll vertical: {{ scrollY }} px | Scroll horizontal:
-          {{ scrollX }} px | Row hover: {{ hoveredRowIndex }}
+          Scroll vertical: {{ scrollY }} px | Scroll horizontal: {{ scrollX }} px
+          | Row hover: {{ hoveredRowIndex }}
         </div>
       </div>
     </div>
