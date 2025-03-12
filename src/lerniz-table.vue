@@ -148,13 +148,24 @@ const visibleItems = computed(() =>
 function handleHeaderClick(event: MouseEvent, header: Header) {
   const headerElement = event.target as HTMLElement;
   const rect = headerElement.getBoundingClientRect();
+  const windowWidth = window.innerWidth;
   
-  // Update menu position to be below the header
-  sortMenuPosition.value = {
-    x: rect.left,
-    y: rect.bottom
-  };
+  // Calculate menu position
+  let x = rect.left;
+  const y = rect.bottom;
   
+  // Get menu width (or use default if not yet rendered)
+  const menuWidth = 200; // Default min-width from CSS
+  
+  // Adjust x position if menu would overflow window
+  if (x + menuWidth > windowWidth) {
+    x = windowWidth - menuWidth - 10; // 10px padding from window edge
+  }
+  
+  // Ensure x is never negative
+  x = Math.max(10, x); // At least 10px from left edge
+  
+  sortMenuPosition.value = { x, y };
   activeHeader.value = header;
   showSortMenu.value = true;
 }
@@ -497,11 +508,11 @@ const toggleDarkMode = () => {
     >
       <div class="sort-menu-item" @click="handleSort('asc')">
         <span class="sort-icon">↑</span>
-        Ordenar ascendente
+        Orden Ascendente
       </div>
       <div class="sort-menu-item" @click="handleSort('desc')">
         <span class="sort-icon">↓</span>
-        Ordenar descendente
+        Orden Descendente
       </div>
     </div>
   </div>
@@ -692,12 +703,13 @@ const toggleDarkMode = () => {
 }
 
 .sort-menu {
-  position: absolute;
+  position: fixed;
   background: white;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   padding: 8px 0;
   min-width: 150px;
+  max-width: 200px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   z-index: 1000;
   margin-top: 2px; /* Small gap between header and menu */
@@ -709,6 +721,7 @@ const toggleDarkMode = () => {
 }
 
 .sort-menu-item {
+  font-size: 0.8rem;
   padding: 8px 16px;
   cursor: pointer;
   display: flex;
@@ -729,6 +742,12 @@ const toggleDarkMode = () => {
   font-size: 14px;
   width: 16px;
   text-align: center;
+}
+
+@media screen and (max-width: 768px) {
+  .sort-menu {
+    max-width: calc(100vw - 20px); /* 10px padding on each side */
+  }
 }
 
 ::-webkit-scrollbar {
