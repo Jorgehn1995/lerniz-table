@@ -25,12 +25,24 @@ const activeHeader = ref<Header | null>(null);
 
 const bgHeight = computed(() => `${props.items.length * itemHeight}px`);
 
-const pinnedHeaders = ref<Header[]>([]);
-const viewportHeaders = ref<Header[]>([]);
+const headers = ref<Header[]>([]);
+const pinnedHeaders = computed(() => headers.value.filter(h => h.isPinnedLeft));
+const viewportHeaders = computed(() => headers.value.filter(h => !h.isPinnedLeft));
+
+const pinnedLeftWidth = computed(() => 
+  50 + pinnedHeaders.value.reduce(
+    (acumulador, elemento) => acumulador + (elemento.width || 0),
+    0
+  )
+);
+
+const togglePinLeft = (header: Header) => {
+  header.isPinnedLeft = !header.isPinnedLeft;
+  showSortMenu.value = false;
+};
 
 const scrollY = ref(0);
 const scrollX = ref(0);
-const pinnedLeftWidth = ref(50);
 const viewportHeight = ref(200);
 
 const mainRef = ref<HTMLElement | null>(null);
@@ -79,14 +91,8 @@ function handleViewportHeaderScroll() {
 
 const pinnedFirstColumn = () => {
   if (!viewportHeaders.value.length) return;
-  pinnedHeaders.value.push(viewportHeaders.value[0]);
-  viewportHeaders.value.splice(0, 1);
-  pinnedLeftWidth.value =
-    50 +
-    pinnedHeaders.value.reduce(
-      (acumulador, elemento) => acumulador + (elemento.width || 0),
-      0
-    );
+  headers.value[0].isPinnedLeft = true;
+  showSortMenu.value = false;
 };
 
 function getScrollbarWidth() {
@@ -116,7 +122,7 @@ const sortedItems = computed(() => {
   if (!sortField.value || !sortDirection.value) return props.items;
 
   return [...props.items].sort((a: T, b: T) => {
-    const header = props.headers.find(h => h.field === sortField.value);
+    const header = headers.value.find(h => h.field === sortField.value);
     if (!header || !sortField.value) return 0;
 
     const field = sortField.value;
@@ -297,7 +303,8 @@ function removeListeners() {
 }
 
 onMounted(() => {
-  viewportHeaders.value = props.headers;
+  headers.value = props.headers;
+  
   if (mainRef.value) {
     viewportHeight.value = mainRef.value.clientHeight;
     mainRef.value.focus();
@@ -527,10 +534,10 @@ const toggleDarkMode = () => {
       v-if="showSortMenu"
       class="sort-menu"
       :style="{
+        position: 'fixed',
         left: sortMenuPosition.x + 'px',
-        top: sortMenuPosition.y + 'px'
+        top: sortMenuPosition.y + 'px',
       }"
-      @click.stop
     >
       <div class="sort-menu-item" @click="handleSort('asc')">
         <span class="sort-icon">↑</span>
@@ -539,6 +546,14 @@ const toggleDarkMode = () => {
       <div class="sort-menu-item" @click="handleSort('desc')">
         <span class="sort-icon">↓</span>
         Orden Descendente
+      </div>
+      <div class="sort-menu-divider"></div>
+      <div 
+        class="sort-menu-item" 
+        @click="activeHeader && togglePinLeft(activeHeader)"
+      >
+        <span class="sort-icon">📌</span>
+        {{ activeHeader?.isPinnedLeft ? 'Desfijar de la izquierda' : 'Fijar a la izquierda' }}
       </div>
     </div>
   </div>
@@ -768,6 +783,12 @@ const toggleDarkMode = () => {
   font-size: 14px;
   width: 16px;
   text-align: center;
+}
+
+.sort-menu-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 4px 0;
 }
 
 @media screen and (max-width: 768px) {

@@ -6,7 +6,8 @@ export interface Option {
 export interface Header {
   text: string;
   field: string;
-  pinned?: boolean;
+  isPinnedLeft?: boolean;
+  isPinnedRight?: boolean;
   type?: "text" | "number";
   modify?: boolean;
   options?: Option[];
