@@ -487,7 +487,7 @@ const headers: Header[] = [
   {
     text: "Nombre",
     field: "name",
-    width: 150,
+    width: 250,
     type: "text",
     modify: false,
     searchable: true,
@@ -500,7 +500,7 @@ const headers: Header[] = [
   {
     text: "A",
     field: "a",
-    width: 80,
+    width: 120,
     type: "number",
     modify: true,
     searchable: true,
@@ -513,7 +513,7 @@ const headers: Header[] = [
   {
     text: "B",
     field: "b",
-    width: 80,
+    width: 120,
     type: "number",
     modify: true,
     searchable: true,
@@ -526,7 +526,7 @@ const headers: Header[] = [
   {
     text: "C",
     field: "c",
-    width: 80,
+    width: 120,
     type: "number",
     modify: true,
     searchable: true,
@@ -539,7 +539,7 @@ const headers: Header[] = [
   {
     text: "D",
     field: "d",
-    width: 80,
+    width: 120,
     type: "number",
     modify: true,
     searchable: true,
@@ -552,7 +552,7 @@ const headers: Header[] = [
   {
     text: "E",
     field: "e",
-    width: 80,
+    width: 120,
     type: "number",
     modify: true,
     searchable: true,
@@ -565,7 +565,7 @@ const headers: Header[] = [
   {
     text: "F",
     field: "f",
-    width: 80,
+    width: 120,
     type: "number",
     modify: true,
     searchable: true,
@@ -578,7 +578,7 @@ const headers: Header[] = [
   {
     text: "G",
     field: "g",
-    width: 80,
+    width: 120,
     type: "number",
     modify: true,
     searchable: true,
@@ -591,7 +591,7 @@ const headers: Header[] = [
   {
     text: "A",
     field: "a",
-    width: 80,
+    width: 120,
     type: "number",
     modify: true,
     searchable: true,
@@ -604,7 +604,7 @@ const headers: Header[] = [
   {
     text: "B",
     field: "b",
-    width: 80,
+    width: 120,
     type: "number",
     modify: true,
     searchable: true,
@@ -617,7 +617,7 @@ const headers: Header[] = [
   {
     text: "C",
     field: "c",
-    width: 80,
+    width: 120,
     type: "number",
     modify: true,
     searchable: true,
@@ -630,7 +630,7 @@ const headers: Header[] = [
   {
     text: "D",
     field: "d",
-    width: 80,
+    width: 120,
     type: "number",
     modify: true,
     searchable: true,
@@ -643,7 +643,7 @@ const headers: Header[] = [
   {
     text: "E",
     field: "e",
-    width: 80,
+    width: 120,
     type: "number",
     modify: true,
     searchable: true,
@@ -656,7 +656,7 @@ const headers: Header[] = [
   {
     text: "F",
     field: "f",
-    width: 80,
+    width: 120,
     type: "number",
     modify: true,
     searchable: true,
@@ -669,7 +669,7 @@ const headers: Header[] = [
   {
     text: "G",
     field: "g",
-    width: 80,
+    width: 120,
     type: "number",
     modify: true,
     searchable: true,

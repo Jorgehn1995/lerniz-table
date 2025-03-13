@@ -5,6 +5,7 @@
 >
 import {
   ref,
+  reactive,
   computed,
   onMounted,
   onUnmounted,
@@ -35,6 +36,7 @@ const sortDirection = ref<"asc" | "desc" | null>(null);
 const showSortMenu = ref(false);
 const sortMenuPosition = ref<{ x: number; y: number }>({ x: 0, y: 0 });
 const activeHeader = ref<Header | null>(null);
+
 
 const bgHeight = computed(() => `${props.items.length * itemHeight}px`);
 
@@ -277,18 +279,22 @@ function handleKeyDown(event: KeyboardEvent) {
     case "ArrowUp":
       event.preventDefault();
       newRow = Math.max(0, newRow - 1);
+     
       break;
     case "ArrowDown":
       event.preventDefault();
       newRow = Math.min(sortedItems.value.length - 1, newRow + 1);
+     
       break;
     case "ArrowLeft":
       event.preventDefault();
       newCol = newCol - 1 === 0 ? 1 : Math.max(0, newCol - 1);
+     
       break;
     case "ArrowRight":
       event.preventDefault();
       newCol = Math.min(totalCols - 1, newCol + 1);
+    
       break;
     case "Enter":
       event.preventDefault();
@@ -485,14 +491,14 @@ const toggleDarkMode = () => {
             >
               <div
                 class="row"
-                v-for="(item, i) in visibleItems"
-                :key="i"
-                @mouseenter="hoveredRowIndex = startIndex + i"
+                v-for="(item, rowIndex) in visibleItems"
+                :key="rowIndex"
+                @mouseenter="hoveredRowIndex = startIndex + rowIndex"
                 @mouseleave="hoveredRowIndex = -1"
-                :class="{ hovered: hoveredRowIndex === startIndex + i }"
+                :class="{ hovered: hoveredRowIndex === startIndex + rowIndex}"
               >
                 <div class="cell firstColumn data-cell">
-                  {{ startIndex + i + 1 }}
+                  {{ startIndex + rowIndex + 1 }}
                 </div>
                 <div
                   class="cell data-cell"
@@ -502,11 +508,11 @@ const toggleDarkMode = () => {
                     width: header.width + 'px',
                     minWidth: header.width + 'px',
                   }"
-                  @click="handleCellClick(startIndex + i, 1 + colIndex)"
-                  @dblclick="enterSelected(startIndex + i, 1 + colIndex)"
+                  @click="handleCellClick(startIndex + rowIndex, 1 + colIndex)"
+                  @dblclick="enterSelected(startIndex + rowIndex, 1 + colIndex)"
                   :class="{
                     selected:
-                      selectedRow === startIndex + i &&
+                      selectedRow === startIndex + rowIndex &&
                       selectedCol === 1 + colIndex,
                   }"
                 >
