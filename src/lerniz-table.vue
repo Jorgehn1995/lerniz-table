@@ -37,7 +37,6 @@ const showSortMenu = ref(false);
 const sortMenuPosition = ref<{ x: number; y: number }>({ x: 0, y: 0 });
 const activeHeader = ref<Header | null>(null);
 
-
 const bgHeight = computed(() => `${props.items.length * itemHeight}px`);
 
 const headers = ref<Header[]>([]);
@@ -67,6 +66,7 @@ const scrollX = ref(0);
 const viewportHeight = ref(200);
 
 const mainRef = ref<HTMLElement | null>(null);
+const activeInput = ref<HTMLInputElement[] | null>(null);
 const viewportRef = ref<HTMLElement | null>(null);
 const viewportHeaderRef = ref<HTMLElement | null>(null);
 
@@ -279,22 +279,22 @@ function handleKeyDown(event: KeyboardEvent) {
     case "ArrowUp":
       event.preventDefault();
       newRow = Math.max(0, newRow - 1);
-     
+
       break;
     case "ArrowDown":
       event.preventDefault();
       newRow = Math.min(sortedItems.value.length - 1, newRow + 1);
-     
+
       break;
     case "ArrowLeft":
       event.preventDefault();
       newCol = newCol - 1 === 0 ? 1 : Math.max(0, newCol - 1);
-     
+
       break;
     case "ArrowRight":
       event.preventDefault();
       newCol = Math.min(totalCols - 1, newCol + 1);
-    
+
       break;
     case "Enter":
       event.preventDefault();
@@ -308,6 +308,14 @@ function handleKeyDown(event: KeyboardEvent) {
 
   selectedRow.value = newRow;
   selectedCol.value = newCol;
+
+  nextTick(() => {
+    if (activeInput.value) {
+      activeInput.value[0].focus();
+      activeInput.value[0].select();
+    }
+  });
+
   ensureCellVisible(newRow, newCol);
 }
 
@@ -495,7 +503,7 @@ const toggleDarkMode = () => {
                 :key="rowIndex"
                 @mouseenter="hoveredRowIndex = startIndex + rowIndex"
                 @mouseleave="hoveredRowIndex = -1"
-                :class="{ hovered: hoveredRowIndex === startIndex + rowIndex}"
+                :class="{ hovered: hoveredRowIndex === startIndex + rowIndex }"
               >
                 <div class="cell firstColumn data-cell">
                   {{ startIndex + rowIndex + 1 }}
@@ -516,7 +524,17 @@ const toggleDarkMode = () => {
                       selectedCol === 1 + colIndex,
                   }"
                 >
-                  {{ item[header.field] }}
+                  <input
+                    ref="activeInput"
+                    v-if="
+                      selectedRow === startIndex + rowIndex &&
+                      selectedCol === 1 + colIndex
+                    "
+                    class="cell-input"
+                    type="text"
+                    v-model="item[header.field]"
+                  />
+                  <span v-else>{{ item[header.field] }}</span>
                 </div>
               </div>
             </div>
@@ -565,7 +583,17 @@ const toggleDarkMode = () => {
                       selectedCol === 1 + pinnedHeaders.length + colIndex,
                   }"
                 >
-                  {{ item[header.field] }}
+                  <input
+                    ref="activeInput"
+                    v-if="
+                      selectedRow === startIndex + rowIndex &&
+                      selectedCol === 1 + pinnedHeaders.length + colIndex
+                    "
+                    class="cell-input"
+                    type="text"
+                    v-model="item[header.field]"
+                  />
+                  <span v-else>{{ item[header.field] }}</span>
                 </div>
               </div>
             </div>
@@ -618,6 +646,16 @@ const toggleDarkMode = () => {
   </div>
 </template>
 <style>
+.cell-input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  padding: 0 0rem;
+}
 .sort-menu-title {
   font-size: 0.8rem;
   padding: 8px 16px;
