@@ -533,8 +533,11 @@ const toggleDarkMode = () => {
                       selectedRow === startIndex + rowIndex &&
                       selectedCol === 1 + colIndex
                     "
-                    class="cell-input"
-                    type="text"
+                    :readonly="header.readonly ?? false"
+                    class="cell-input cell-input-number"
+                    :type="header.type ?? 'text'"
+                    @keydown.up.prevent
+                    @keydown.down.prevent
                     v-model="item[header.field]"
                   />
                   <span v-else>{{ item[header.field] }}</span>
@@ -592,8 +595,11 @@ const toggleDarkMode = () => {
                       selectedRow === startIndex + rowIndex &&
                       selectedCol === 1 + pinnedHeaders.length + colIndex
                     "
-                    class="cell-input"
-                    type="text"
+                    :readonly="header.readonly ?? false"
+                    class="cell-input cell-input-number"
+                    :type="header.type ?? 'text'"
+                    @keydown.up.prevent
+                    @keydown.down.prevent
                     v-model="item[header.field]"
                   />
                   <span v-else>{{ item[header.field] }}</span>
@@ -659,6 +665,12 @@ const toggleDarkMode = () => {
   color: inherit;
   padding: 0 0rem;
 }
+.cell-input-number::-webkit-inner-spin-button,
+.cell-input-number::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 .sort-menu-title {
   font-size: 0.8rem;
   padding: 8px 16px;

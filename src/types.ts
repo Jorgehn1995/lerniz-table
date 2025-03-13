@@ -4,13 +4,14 @@ export interface Option {
 }
 
 export interface Header {
-  id?:string;
+  id?: string;
   text: string;
   field: string;
   isPinnedLeft?: boolean;
   isPinnedRight?: boolean;
   type?: "text" | "number";
-  modify?: boolean;
+  inputType?: "input" | "select";
+  readonly?: boolean;
   options?: Option[];
   width?: number;
   searchable?: boolean;
