@@ -540,7 +540,7 @@ const toggleDarkMode = () => {
                     @keydown.down.prevent
                     v-model="item[header.field]"
                   />
-                  <span v-else>{{ item[header.field] }}</span>
+                  <div v-else class="cell-text">{{ item[header.field] }}</div>
                 </div>
               </div>
             </div>
@@ -589,7 +589,7 @@ const toggleDarkMode = () => {
                       selectedCol === 1 + pinnedHeaders.length + colIndex,
                   }"
                 >
-                {{ header.prefix }}
+                  {{ header.prefix }}
                   <input
                     ref="activeInput"
                     v-if="
@@ -597,13 +597,13 @@ const toggleDarkMode = () => {
                       selectedCol === 1 + pinnedHeaders.length + colIndex
                     "
                     :readonly="header.readonly ?? false"
-                    class="cell-input cell-input-number"
+                    :class="`cell-input cell-input-number cell-${header.align??'left'}`"
                     :type="header.type ?? 'text'"
                     @keydown.up.prevent
                     @keydown.down.prevent
                     v-model="item[header.field]"
                   />
-                  <span v-else class="cell-span">{{ item[header.field] }}</span>
+                  <div v-else :class="`cell-text cell-${header.align??'left'}`">{{ item[header.field] }}</div>
                   {{ header.suffix }}
                 </div>
               </div>
@@ -671,9 +671,8 @@ const toggleDarkMode = () => {
   cursor: not-allowed; /* Cambia el cursor para indicar que no se puede hacer clic */
   pointer-events: none;
 }
-.cell-span,
+.cell-text,
 .cell-input {
-  
   width: 100%;
   height: 100%;
   border: none;
@@ -684,10 +683,25 @@ const toggleDarkMode = () => {
   color: inherit;
   padding-left: 2px;
   padding-right: 2px;
-  display: inline-flex;
-  align-items: center;
-  line-height: 1; /* Asegura que el texto tenga la misma altura */
+  display: flex; /* Asegura que ambos elementos se comporten igual */
+  align-items: center; /* Centra verticalmente el contenido */
+  line-height: 1;
   vertical-align: middle;
+}
+
+.cell-center {
+  text-align: center;
+  justify-content: center; /* Centra horizontalmente el contenido */
+}
+
+.cell-left {
+  text-align: left;
+  justify-content: flex-start; /* Asegura alineación a la izquierda */
+}
+
+.cell-right {
+  text-align: right;
+  justify-content: flex-end; /* Asegura alineación a la derecha */
 }
 
 

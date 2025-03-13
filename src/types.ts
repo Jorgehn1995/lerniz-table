@@ -7,11 +7,12 @@ export interface Header {
   id?: string;
   text: string;
   field: string;
-  pinneable ?:boolean;
+  pinneable?: boolean;
   isPinnedLeft?: boolean;
   isPinnedRight?: boolean;
   inputType?: "input" | "select";
   type?: "text" | "number";
+  align?: "left" | "center" | "right";
   readonly?: boolean;
   options?: Option[];
   width?: number;
