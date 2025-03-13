@@ -266,6 +266,7 @@ function ensureCellVisible(row: number, col: number) {
 function handleCellClick(rowIndex: number, colIndex: number) {
   selectedRow.value = rowIndex;
   selectedCol.value = colIndex;
+  focusInput();
 }
 
 function handleKeyDown(event: KeyboardEvent) {
@@ -308,16 +309,18 @@ function handleKeyDown(event: KeyboardEvent) {
 
   selectedRow.value = newRow;
   selectedCol.value = newCol;
+  focusInput();
+  ensureCellVisible(newRow, newCol);
+}
 
+const focusInput = () => {
   nextTick(() => {
     if (activeInput.value) {
       activeInput.value[0].focus();
       activeInput.value[0].select();
     }
   });
-
-  ensureCellVisible(newRow, newCol);
-}
+};
 
 const enterSelected = (row: number, col: number) => {
   console.log(`enter keydown - row: ${row}, col: ${col}`);
