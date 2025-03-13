@@ -498,6 +498,8 @@ const headers: Header[] = [
     width: 120,
     type: "number",
     readonly: false,
+    prefix:"Q",
+    suffix:"pts"
   },
   {
     text: "B",

@@ -589,6 +589,7 @@ const toggleDarkMode = () => {
                       selectedCol === 1 + pinnedHeaders.length + colIndex,
                   }"
                 >
+                {{ header.prefix }}
                   <input
                     ref="activeInput"
                     v-if="
@@ -602,7 +603,8 @@ const toggleDarkMode = () => {
                     @keydown.down.prevent
                     v-model="item[header.field]"
                   />
-                  <span v-else>{{ item[header.field] }}</span>
+                  <span v-else class="cell-span">{{ item[header.field] }}</span>
+                  {{ header.suffix }}
                 </div>
               </div>
             </div>
@@ -669,16 +671,26 @@ const toggleDarkMode = () => {
   cursor: not-allowed; /* Cambia el cursor para indicar que no se puede hacer clic */
   pointer-events: none;
 }
+.cell-span,
 .cell-input {
+  
   width: 100%;
   height: 100%;
   border: none;
   outline: none;
   background: transparent;
   font: inherit;
+  font-size: inherit;
   color: inherit;
-  padding: 0 0rem;
+  padding-left: 2px;
+  padding-right: 2px;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1; /* Asegura que el texto tenga la misma altura */
+  vertical-align: middle;
 }
+
+
 .cell-input-number::-webkit-inner-spin-button,
 .cell-input-number::-webkit-outer-spin-button {
   -webkit-appearance: none;

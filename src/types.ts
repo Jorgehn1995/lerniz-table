@@ -10,8 +10,8 @@ export interface Header {
   pinneable ?:boolean;
   isPinnedLeft?: boolean;
   isPinnedRight?: boolean;
-  type?: "text" | "number";
   inputType?: "input" | "select";
+  type?: "text" | "number";
   readonly?: boolean;
   options?: Option[];
   width?: number;
