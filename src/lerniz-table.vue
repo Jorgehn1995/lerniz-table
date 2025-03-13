@@ -630,11 +630,19 @@ const toggleDarkMode = () => {
       <div class="sort-menu-title">
         {{ activeHeader?.text }}
       </div>
-      <div class="sort-menu-item" @click="handleSort('asc')">
+      <div
+        class="sort-menu-item"
+        @click="handleSort('asc')"
+        :class="{ disabled: !(activeHeader?.sortable ?? true) }"
+      >
         <span class="sort-icon">↑</span>
         Orden Ascendente
       </div>
-      <div class="sort-menu-item" @click="handleSort('desc')">
+      <div
+        class="sort-menu-item"
+        @click="handleSort('desc')"
+        :class="{ disabled: !(activeHeader?.sortable ?? true) }"
+      >
         <span class="sort-icon">↓</span>
         Orden Descendente
       </div>
@@ -642,6 +650,7 @@ const toggleDarkMode = () => {
       <div
         class="sort-menu-item"
         @click="activeHeader && togglePinLeft(activeHeader)"
+        :class="{ disabled: !(activeHeader?.sortable ?? true) }"
       >
         <span class="sort-icon">📌</span>
         {{
@@ -655,6 +664,11 @@ const toggleDarkMode = () => {
   </div>
 </template>
 <style>
+.disabled {
+  opacity: 0.5; /* Da un efecto visual de deshabilitado */
+  cursor: not-allowed; /* Cambia el cursor para indicar que no se puede hacer clic */
+  pointer-events: none;
+}
 .cell-input {
   width: 100%;
   height: 100%;

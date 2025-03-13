@@ -7,6 +7,7 @@ export interface Header {
   id?: string;
   text: string;
   field: string;
+  pinneable ?:boolean;
   isPinnedLeft?: boolean;
   isPinnedRight?: boolean;
   type?: "text" | "number";
