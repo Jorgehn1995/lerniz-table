@@ -609,17 +609,36 @@ const toggleDarkMode = () => {
                         {{ option.text }}
                       </option>
                     </select>
+                    <input
+                      v-else
+                      ref="activeInput"
+                      :readonly="header.readonly ?? false"
+                      :class="`cell-input cell-input-number cell-input-checkbox cell-${
+                        header.align ?? 'left'
+                      }`"
+                      type="checkbox"
+                      v-model="item[header.field]"
+                    />
                   </div>
 
                   <div
                     v-else
                     :class="`cell-text cell-${header.align ?? 'left'}`"
                   >
-                    <span v-if="header.type == 'select'">
+                    <span
+                      v-if="
+                        header.type == 'text' ||
+                        header.type == 'date' ||
+                        header.type == 'number'
+                      "
+                    >
+                      {{ item[header.field] }}
+                    </span>
+                    <span v-else-if="header.type == 'select'">
                       {{ header.optionsMap?.[item[header.field] ?? ""] ?? "-" }}
                     </span>
-                    <span v-else>
-                      {{ item[header.field] }}
+                    <span v-else class="checkbox-text">
+                      {{ item[header.field] ? "✔" : "" }}
                     </span>
                   </div>
                   {{ header.suffix }}
@@ -710,17 +729,36 @@ const toggleDarkMode = () => {
                         {{ option.text }}
                       </option>
                     </select>
+                    <input
+                      v-else
+                      ref="activeInput"
+                      :readonly="header.readonly ?? false"
+                      :class="`cell-input cell-input-number cell-input-checkbox cell-${
+                        header.align ?? 'left'
+                      }`"
+                      type="checkbox"
+                      v-model="item[header.field]"
+                    />
                   </div>
 
                   <div
                     v-else
                     :class="`cell-text cell-${header.align ?? 'left'}`"
                   >
-                    <span v-if="header.type == 'select'">
+                    <span
+                      v-if="
+                        header.type == 'text' ||
+                        header.type == 'date' ||
+                        header.type == 'number'
+                      "
+                    >
+                      {{ item[header.field] }}
+                    </span>
+                    <span v-else-if="header.type == 'select'">
                       {{ header.optionsMap?.[item[header.field] ?? ""] ?? "-" }}
                     </span>
-                    <span v-else>
-                      {{ item[header.field] }}
+                    <span v-else class="checkbox-text">
+                      {{ item[header.field] ? "✔" : "" }}
                     </span>
                   </div>
                   {{ header.suffix }}
@@ -809,6 +847,10 @@ const toggleDarkMode = () => {
   line-height: 1;
   vertical-align: middle;
 }
+.cell-input-checkbox {
+  
+  accent-color: #3f51b5;
+}
 .cell-option {
   width: 100%;
   font: inherit; /* Hereda la fuente del contenedor */
@@ -828,7 +870,12 @@ const toggleDarkMode = () => {
 /* Estilo para cuando el option está seleccionado o en hover */
 .cell-option:checked,
 .cell-option:hover {
-  background-color: rgba(0, 0, 0, 0.1); /* Fondo ligeramente oscuro al seleccionar o pasar el mouse */
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.1
+  ); /* Fondo ligeramente oscuro al seleccionar o pasar el mouse */
   color: #333; /* Cambia el color del texto para mejorar el contraste */
 }
 
@@ -918,7 +965,9 @@ const toggleDarkMode = () => {
   gap: 0.5rem;
   margin-bottom: 1rem;
 }
-
+.checkbox-text {
+  color: #3f51b5;
+}
 .pin-button,
 .theme-toggle {
   background: #3f51b5;

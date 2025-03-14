@@ -18229,7 +18229,8 @@ const headers: Header[] = [
     text: "B",
     field: "b",
     width: 180,
-    type: "date",
+    type: "checkbox",
+    align:"center",
     readonly: false,
   },
   {
