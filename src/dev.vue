@@ -5,7 +5,7 @@ import { items, headers } from "./items.ts";
 </script>
 
 <template>
-  <LernizTable :items="items" :headers="headers">
+  <LernizTable :items="items" :headers="headers" edit-cells>
     <template #custom-menu-items="{ header }">
       <div class="sort-menu-item">
         <span class="sort-icon">📌</span>

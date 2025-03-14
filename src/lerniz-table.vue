@@ -5,20 +5,20 @@
 >
 import {
   ref,
-  reactive,
   computed,
   onMounted,
   onUnmounted,
   nextTick,
   defineProps,
 } from "vue";
-import { Header, TableItem } from "./types";
+import { Header } from "./types";
 
 export interface LernizTableProps<
   T extends Record<string, string | number | null>
 > {
   items: T[];
   headers: Header[];
+  editCells?: boolean;
 }
 
 const props = defineProps<LernizTableProps<T>>();
@@ -39,7 +39,7 @@ const activeHeader = ref<Header | null>(null);
 
 const bgHeight = computed(() => `${props.items.length * itemHeight}px`);
 
-const headers = ref<Header[]>([]);
+const headers = ref<Header[]>(props.headers); // Usar props directamente
 const pinnedHeaders = computed(() => headers.value.filter((h) => h.isPinned));
 const viewportHeaders = computed(() =>
   headers.value.filter((h) => !h.isPinned)
@@ -322,12 +322,14 @@ function handleKeyDown(event: KeyboardEvent) {
 const timer = ref<number | null>(null);
 
 const focusInput = () => {
-  if (timer.value != null) {
-    clearTimeout(timer.value);
+  if (props.editCells) {
+    if (timer.value != null) {
+      clearTimeout(timer.value);
+    }
+    timer.value = setTimeout(() => {
+      setFocus();
+    }, 10);
   }
-  timer.value = setTimeout(() => {
-    setFocus();
-  }, 10);
 };
 const setFocus = () => {
   if (activeInput.value) {
@@ -546,18 +548,33 @@ const toggleDarkMode = () => {
                       selectedCol === 1 + colIndex,
                   }"
                 >
-                  <input
-                    ref="activeInput"
+                  {{ header.prefix }}
+                  <div
                     v-if="
+                      editCells &&
                       selectedRow === startIndex + rowIndex &&
                       selectedCol === 1 + colIndex
                     "
-                    :readonly="header.readonly ?? false"
-                    class="cell-input cell-input-number"
-                    :type="header.type ?? 'text'"
-                    v-model="item[header.field]"
-                  />
-                  <div v-else class="cell-text">{{ item[header.field] }}</div>
+                    class="cell-input-container"
+                  >
+                    <input
+                      ref="activeInput"
+                      :readonly="header.readonly ?? false"
+                      :class="`cell-input cell-input-number cell-${
+                        header.align ?? 'left'
+                      }`"
+                      :type="header.type ?? 'text'"
+                      v-model="item[header.field]"
+                    />
+                  </div>
+
+                  <div
+                    v-else
+                    :class="`cell-text cell-${header.align ?? 'left'}`"
+                  >
+                    {{ item[header.field] }}
+                  </div>
+                  {{ header.suffix }}
                 </div>
               </div>
             </div>
@@ -607,19 +624,25 @@ const toggleDarkMode = () => {
                   }"
                 >
                   {{ header.prefix }}
-                  <input
-                    ref="activeInput"
+                  <div
                     v-if="
+                      editCells &&
                       selectedRow === startIndex + rowIndex &&
                       selectedCol === 1 + pinnedHeaders.length + colIndex
                     "
-                    :readonly="header.readonly ?? false"
-                    :class="`cell-input cell-input-number cell-${
-                      header.align ?? 'left'
-                    }`"
-                    :type="header.type ?? 'text'"
-                    v-model="item[header.field]"
-                  />
+                    class="cell-input-container"
+                  >
+                    <input
+                      ref="activeInput"
+                      :readonly="header.readonly ?? false"
+                      :class="`cell-input cell-input-number cell-${
+                        header.align ?? 'left'
+                      }`"
+                      :type="header.type ?? 'text'"
+                      v-model="item[header.field]"
+                    />
+                  </div>
+
                   <div
                     v-else
                     :class="`cell-text cell-${header.align ?? 'left'}`"
@@ -694,6 +717,9 @@ const toggleDarkMode = () => {
   cursor: not-allowed; /* Cambia el cursor para indicar que no se puede hacer clic */
   pointer-events: none;
 }
+.cell-input-container {
+  width: 100%;
+}
 .cell-text,
 .cell-input {
   width: 100%;
@@ -704,8 +730,6 @@ const toggleDarkMode = () => {
   font: inherit;
   font-size: inherit;
   color: inherit;
-  padding-left: 2px;
-  padding-right: 2px;
   display: flex; /* Asegura que ambos elementos se comporten igual */
   align-items: center; /* Centra verticalmente el contenido */
   line-height: 1;
@@ -871,6 +895,7 @@ const toggleDarkMode = () => {
   padding: 0 0.8rem;
   display: flex;
   align-items: center;
+  gap: 2px;
   border-right: 1px solid var(--border-color);
   border-bottom: 1px solid var(--border-color);
   background: var(--cell-bg);
