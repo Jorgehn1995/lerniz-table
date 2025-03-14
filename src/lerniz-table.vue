@@ -232,7 +232,7 @@ function ensureCellVisible(row: number, col: number) {
   // Actualizar scrollY síncronamente y hacer scroll
   if (newScrollY !== currentScrollY) {
     scrollY.value = newScrollY; // Actualización síncrona
-    mainRef.value?.scrollTo({ top: newScrollY, behavior: "auto" });
+    mainRef.value?.scrollTo({ top: newScrollY, behavior: "smooth" });
   }
 
   // Scroll horizontal (código existente)
@@ -267,13 +267,14 @@ function ensureCellVisible(row: number, col: number) {
   // Actualizar scrollX síncronamente y hacer scroll
   if (newScrollX !== currentScrollX) {
     scrollX.value = newScrollX; // Actualización síncrona
-    viewportRef.value?.scrollTo({ left: newScrollX, behavior: "auto" });
+    viewportRef.value?.scrollTo({ left: newScrollX, behavior: "smooth" });
   }
 }
 
 function handleCellClick(rowIndex: number, colIndex: number) {
   selectedRow.value = rowIndex;
   selectedCol.value = colIndex;
+  ensureCellVisible(rowIndex, colIndex); // Añade esta línea
   focusInput();
 }
 
