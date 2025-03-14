@@ -1,5 +1,5 @@
 <script setup>
-import LernizTable from '../src/lerniz-table.vue';
+import LernizTable from '../src/LernizTable.vue';
 import { items, headers } from "./items.ts";
 </script>
 

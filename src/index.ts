@@ -1,5 +1,5 @@
 import { App } from "vue";
-import LernizTable from "./lerniz-table.vue";
+import LernizTable from "./LernizTable.vue";
 
 export default {
   install: (app: App) => {
