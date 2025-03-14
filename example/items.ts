@@ -18228,16 +18228,26 @@ const headers: Header[] = [
   {
     text: "B",
     field: "b",
-    width: 120,
-    type: "number",
+    width: 180,
+    type: "date",
     readonly: false,
   },
   {
     text: "C",
     field: "c",
     width: 120,
-    type: "number",
+    type: "select",
     readonly: false,
+    options:[
+      {
+        value:1,
+        text:"Primero"
+      },
+      {
+        value:2,
+        text:"Segundo"
+      }
+    ]
   },
   {
     text: "D",

@@ -39,7 +39,7 @@ const activeHeader = ref<Header | null>(null);
 
 const bgHeight = computed(() => `${props.items.length * itemHeight}px`);
 
-const headers = ref<Header[]>(props.headers); // Usar props directamente
+const headers = ref<Header[]>([]); // Usar props directamente
 const pinnedHeaders = computed(() => headers.value.filter((h) => h.isPinned));
 const viewportHeaders = computed(() =>
   headers.value.filter((h) => !h.isPinned)
@@ -333,8 +333,15 @@ const focusInput = () => {
 };
 const setFocus = () => {
   if (activeInput.value) {
-    activeInput.value[0].focus();
-    activeInput.value[0].select();
+    const element = activeInput.value[0];
+    if (element.tagName === "INPUT") {
+      element.focus();
+      element.select();
+    } else if (element.tagName === "SELECT") {
+      element.focus();
+    } else {
+      console.log("No es un input ni un select");
+    }
   } else {
     console.log("no esta");
   }
@@ -368,9 +375,24 @@ function removeListeners() {
   );
   document.removeEventListener("click", handleDocumentClick);
 }
+function setHeader() {
+  headers.value = props.headers;
+  headers.value.forEach((h) => {
+    if (h.options) {
+      h.optionsMap = h.options.reduce(
+        (acc: { [key: string | number]: string }, item) => {
+          acc[item.value] = item.text;
+          return acc;
+        },
+        {} as { [key: string | number]: string }
+      );
+    }
+  });
+}
 
 onMounted(() => {
-  headers.value = props.headers;
+  //headers.value = props.headers;
+  setHeader();
 
   if (mainRef.value) {
     viewportHeight.value = mainRef.value.clientHeight;
@@ -633,6 +655,11 @@ const toggleDarkMode = () => {
                     class="cell-input-container"
                   >
                     <input
+                      v-if="
+                        header.type == 'text' ||
+                        header.type == 'date' ||
+                        header.type == 'number'
+                      "
                       ref="activeInput"
                       :readonly="header.readonly ?? false"
                       :class="`cell-input cell-input-number cell-${
@@ -641,13 +668,34 @@ const toggleDarkMode = () => {
                       :type="header.type ?? 'text'"
                       v-model="item[header.field]"
                     />
+                    <select
+                      v-else-if="header.type == 'select'"
+                      ref="activeInput"
+                      :class="`cell-input cell-input-number cell-${
+                        header.align ?? 'left'
+                      }`"
+                      v-model="item[header.field]"
+                    >
+                      <option
+                        class="cell-option"
+                        v-for="(option, i) in header.options"
+                        :value="option.value"
+                      >
+                        {{ option.text }}
+                      </option>
+                    </select>
                   </div>
 
                   <div
                     v-else
                     :class="`cell-text cell-${header.align ?? 'left'}`"
                   >
-                    {{ item[header.field] }}
+                    <span v-if="header.type == 'select'">
+                      {{ header.optionsMap?.[item[header.field] ?? ""] ?? "-" }}
+                    </span>
+                    <span v-else>
+                      {{ item[header.field] }}
+                    </span>
                   </div>
                   {{ header.suffix }}
                 </div>
@@ -734,6 +782,34 @@ const toggleDarkMode = () => {
   align-items: center; /* Centra verticalmente el contenido */
   line-height: 1;
   vertical-align: middle;
+}
+.cell-option {
+  width: 100%;
+  font: inherit; /* Hereda la fuente del contenedor */
+  font-size: inherit; /* Hereda el tamaño de la fuente */
+  color: inherit; /* Hereda el color del texto */
+  background-color: transparent; /* Fondo transparente */
+  padding: 8px 12px; /* Espaciado interno para mejor legibilidad */
+  border: none; /* Sin bordes */
+  outline: none; /* Sin contorno al enfocar */
+  appearance: none; /* Elimina el estilo por defecto del navegador */
+  -webkit-appearance: none; /* Para compatibilidad con Safari */
+  -moz-appearance: none; /* Para compatibilidad con Firefox */
+  cursor: pointer; /* Cambia el cursor a pointer para indicar que es clickeable */
+  transition: background-color 0.2s ease, color 0.2s ease; /* Transición suave */
+}
+
+/* Estilo para cuando el option está seleccionado o en hover */
+.cell-option:checked,
+.cell-option:hover {
+  background-color: rgba(0, 0, 0, 0.1); /* Fondo ligeramente oscuro al seleccionar o pasar el mouse */
+  color: #333; /* Cambia el color del texto para mejorar el contraste */
+}
+
+/* Estilo para el foco (accesibilidad) */
+.cell-option:focus {
+  background-color: rgba(0, 0, 0, 0.05); /* Fondo más claro al enfocar */
+  color: #000; /* Texto más oscuro para mejor legibilidad */
 }
 
 .cell-center {

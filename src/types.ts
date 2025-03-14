@@ -1,6 +1,6 @@
 export interface Option {
   text: string;
-  value: any;
+  value: string | number;
 }
 
 export interface Header {
@@ -17,6 +17,7 @@ export interface Header {
   prefix?: string; //ya
   suffix?: string; //ya
   options?: Option[];
+  optionsMap?: Record<string, string>;
   searchable?: boolean;
   isHidden?: boolean;
 
