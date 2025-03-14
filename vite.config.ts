@@ -1,12 +1,16 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import dts from "vite-plugin-dts";
+import path from 'path';
 
 export default defineConfig(({ mode }) => {
   const isDev = mode !== "production"; // Obtiene el modo actual correctamente
 
   return {
     plugins: [vue(), ...(isDev ? [] : [dts()])], // Solo genera .d.ts en modo build
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    },
     build: isDev
       ? {} // Si está en modo dev, usa la configuración predeterminada de Vite
       : {

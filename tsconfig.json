@@ -8,5 +8,5 @@
     "module": "ESNext",
     "strict": true
   },
-  "include": ["src"]
+  "include": ["src", "example/items.ts"]
 }

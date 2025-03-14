@@ -1,4 +1,4 @@
-import type { Header } from "./types";
+import type { Header } from "../src/types";
 const items = [
   {
     name: "Ejemplo a",

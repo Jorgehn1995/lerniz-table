@@ -1,6 +1,6 @@
 <script setup>
-import { onMounted, ref } from "vue";
-import { LernizTable } from "./index";
+
+import LernizTable from '../src/lerniz-table.vue';
 import { items, headers } from "./items.ts";
 </script>
 
