@@ -40,9 +40,7 @@ const activeHeader = ref<Header | null>(null);
 const bgHeight = computed(() => `${props.items.length * itemHeight}px`);
 
 const headers = ref<Header[]>([]);
-const pinnedHeaders = computed(() =>
-  headers.value.filter((h) => h.isPinned)
-);
+const pinnedHeaders = computed(() => headers.value.filter((h) => h.isPinned));
 const viewportHeaders = computed(() =>
   headers.value.filter((h) => !h.isPinned)
 );
@@ -216,59 +214,58 @@ function handleDocumentClick(event: MouseEvent) {
 }
 
 function ensureCellVisible(row: number, col: number) {
-  const rowTop = row * itemHeight;
-  const rowBottom = (row + 1) * itemHeight;
-  const currentScrollY = scrollY.value;
-  const viewportHeightVal = viewportHeight.value;
+  nextTick(() => {
+    // <-- Agregar nextTick aquí
+    const rowTop = row * itemHeight;
+    const rowBottom = (row + 1) * itemHeight;
+    const currentScrollY = scrollY.value;
+    const viewportHeightVal = viewportHeight.value;
 
-  // Calcular nuevo scrollY
-  let newScrollY = currentScrollY;
-  if (rowTop < currentScrollY) {
-    newScrollY = rowTop;
-  } else if (rowBottom > currentScrollY + viewportHeightVal) {
-    newScrollY = rowBottom - viewportHeightVal;
-  }
+    let newScrollY = currentScrollY;
+    if (rowTop < currentScrollY) {
+      newScrollY = rowTop;
+    } else if (rowBottom > currentScrollY + viewportHeightVal) {
+      newScrollY = rowBottom - viewportHeightVal;
+    }
 
-  // Actualizar scrollY síncronamente y hacer scroll
-  if (newScrollY !== currentScrollY) {
-    scrollY.value = newScrollY; // Actualización síncrona
-    mainRef.value?.scrollTo({ top: newScrollY, behavior: "smooth" });
-  }
+    if (newScrollY !== currentScrollY) {
+      scrollY.value = newScrollY;
+      mainRef.value?.scrollTo({ top: newScrollY, behavior: "smooth" });
+    }
 
-  // Scroll horizontal (código existente)
-  if (col === 0) return;
-  const totalPinned = pinnedHeaders.value.length;
-  if (col <= totalPinned) return;
+    // Scroll horizontal (código existente)
+    if (col === 0) return;
+    const totalPinned = pinnedHeaders.value.length;
+    if (col <= totalPinned) return;
 
-  const viewportColIndex = col - totalPinned - 1;
-  if (
-    viewportColIndex < 0 ||
-    viewportColIndex >= viewportHeaders.value.length
-  )
-    return;
+    const viewportColIndex = col - totalPinned - 1;
+    if (
+      viewportColIndex < 0 ||
+      viewportColIndex >= viewportHeaders.value.length
+    )
+      return;
 
-  let start = 0;
-  for (let i = 0; i < viewportColIndex; i++) {
-    start += viewportHeaders.value[i].width || 0;
-  }
-  const end = start + (viewportHeaders.value[viewportColIndex].width || 0);
+    let start = 0;
+    for (let i = 0; i < viewportColIndex; i++) {
+      start += viewportHeaders.value[i].width || 0;
+    }
+    const end = start + (viewportHeaders.value[viewportColIndex].width || 0);
 
-  const viewportWidth = viewportRef.value?.clientWidth || 0;
-  const currentScrollX = scrollX.value;
+    const viewportWidth = viewportRef.value?.clientWidth || 0;
+    const currentScrollX = scrollX.value;
 
-  // Calcular nuevo scrollX
-  let newScrollX = currentScrollX;
-  if (start < currentScrollX) {
-    newScrollX = start;
-  } else if (end > currentScrollX + viewportWidth) {
-    newScrollX = end - viewportWidth;
-  }
+    let newScrollX = currentScrollX;
+    if (start < currentScrollX) {
+      newScrollX = start;
+    } else if (end > currentScrollX + viewportWidth) {
+      newScrollX = end - viewportWidth;
+    }
 
-  // Actualizar scrollX síncronamente y hacer scroll
-  if (newScrollX !== currentScrollX) {
-    scrollX.value = newScrollX; // Actualización síncrona
-    viewportRef.value?.scrollTo({ left: newScrollX, behavior: "smooth" });
-  }
+    if (newScrollX !== currentScrollX) {
+      scrollX.value = newScrollX;
+      viewportRef.value?.scrollTo({ left: newScrollX, behavior: "smooth" });
+    }
+  });
 }
 
 function handleCellClick(rowIndex: number, colIndex: number) {
@@ -322,13 +319,23 @@ function handleKeyDown(event: KeyboardEvent) {
   ensureCellVisible(newRow, newCol);
 }
 
+const timer = ref<number | null>(null);
+
 const focusInput = () => {
-  nextTick(() => {
-    if (activeInput.value) {
-      activeInput.value[0].focus();
-      activeInput.value[0].select();
-    }
-  });
+  if (timer.value != null) {
+    clearTimeout(timer.value);
+  }
+  timer.value = setTimeout(() => {
+    setFocus();
+  }, 10);
+};
+const setFocus = () => {
+  if (activeInput.value) {
+    activeInput.value[0].focus();
+    activeInput.value[0].select();
+  } else {
+    console.log("no esta");
+  }
 };
 
 const enterSelected = (row: number, col: number) => {
@@ -382,6 +389,7 @@ onMounted(() => {
     },
     true
   );
+  window.addEventListener("keydown", handleKeyDown); // <-- Agregar esto
 });
 
 onUnmounted(() => {
@@ -394,6 +402,7 @@ onUnmounted(() => {
     },
     true
   );
+  window.removeEventListener("keydown", handleKeyDown); // <-- Agregar esto
 });
 
 function handleClickOutside(event: MouseEvent) {
@@ -492,7 +501,8 @@ const toggleDarkMode = () => {
 
       <div class="layout">
         <!-- Cuerpo principal -->
-        <div class="main" ref="mainRef" tabindex="0" @keydown="handleKeyDown">
+        <div class="main" ref="mainRef" tabindex="0">
+          <!-- Quitar @keydown aquí -->
           <!-- Pinned Column -->
           <div
             class="pinned-left fit"
@@ -545,8 +555,6 @@ const toggleDarkMode = () => {
                     :readonly="header.readonly ?? false"
                     class="cell-input cell-input-number"
                     :type="header.type ?? 'text'"
-                    @keydown.up.prevent
-                    @keydown.down.prevent
                     v-model="item[header.field]"
                   />
                   <div v-else class="cell-text">{{ item[header.field] }}</div>
@@ -606,13 +614,18 @@ const toggleDarkMode = () => {
                       selectedCol === 1 + pinnedHeaders.length + colIndex
                     "
                     :readonly="header.readonly ?? false"
-                    :class="`cell-input cell-input-number cell-${header.align??'left'}`"
+                    :class="`cell-input cell-input-number cell-${
+                      header.align ?? 'left'
+                    }`"
                     :type="header.type ?? 'text'"
-                    @keydown.up.prevent
-                    @keydown.down.prevent
                     v-model="item[header.field]"
                   />
-                  <div v-else :class="`cell-text cell-${header.align??'left'}`">{{ item[header.field] }}</div>
+                  <div
+                    v-else
+                    :class="`cell-text cell-${header.align ?? 'left'}`"
+                  >
+                    {{ item[header.field] }}
+                  </div>
                   {{ header.suffix }}
                 </div>
               </div>
@@ -622,8 +635,9 @@ const toggleDarkMode = () => {
 
         <!-- Info de scroll -->
         <div class="scroll-info">
-          Scroll vertical: {{ scrollY }} px | Scroll horizontal:
-          {{ scrollX }} px | Row hover: {{ hoveredRowIndex }}
+          Visible Items {{ visibleItems.length }} | Scroll vertical:
+          {{ scrollY }} px | Scroll horizontal: {{ scrollX }} px | Row hover:
+          {{ hoveredRowIndex }}
         </div>
       </div>
     </div>
@@ -712,7 +726,6 @@ const toggleDarkMode = () => {
   text-align: right;
   justify-content: flex-end; /* Asegura alineación a la derecha */
 }
-
 
 .cell-input-number::-webkit-inner-spin-button,
 .cell-input-number::-webkit-outer-spin-button {
