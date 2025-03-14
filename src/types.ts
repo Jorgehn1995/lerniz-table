@@ -19,6 +19,8 @@ export interface Header {
   options?: Option[];
   searchable?: boolean;
   isHidden?: boolean;
+
+  onChange?: (newValue: any) => void;
 }
 
 export type TableItem = Record<string, string | number | null>;
