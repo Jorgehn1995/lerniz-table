@@ -580,6 +580,11 @@ const toggleDarkMode = () => {
                     class="cell-input-container"
                   >
                     <input
+                      v-if="
+                        header.type == 'text' ||
+                        header.type == 'date' ||
+                        header.type == 'number'
+                      "
                       ref="activeInput"
                       :readonly="header.readonly ?? false"
                       :class="`cell-input cell-input-number cell-${
@@ -588,13 +593,34 @@ const toggleDarkMode = () => {
                       :type="header.type ?? 'text'"
                       v-model="item[header.field]"
                     />
+                    <select
+                      v-else-if="header.type == 'select'"
+                      ref="activeInput"
+                      :class="`cell-input cell-input-number cell-${
+                        header.align ?? 'left'
+                      }`"
+                      v-model="item[header.field]"
+                    >
+                      <option
+                        class="cell-option"
+                        v-for="(option, i) in header.options"
+                        :value="option.value"
+                      >
+                        {{ option.text }}
+                      </option>
+                    </select>
                   </div>
 
                   <div
                     v-else
                     :class="`cell-text cell-${header.align ?? 'left'}`"
                   >
-                    {{ item[header.field] }}
+                    <span v-if="header.type == 'select'">
+                      {{ header.optionsMap?.[item[header.field] ?? ""] ?? "-" }}
+                    </span>
+                    <span v-else>
+                      {{ item[header.field] }}
+                    </span>
                   </div>
                   {{ header.suffix }}
                 </div>
