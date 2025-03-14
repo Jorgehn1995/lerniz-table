@@ -7,20 +7,17 @@ export interface Header {
   id?: string;
   text: string;
   field: string;
-  pinneable?: boolean;
-  isPinnedLeft?: boolean;
-  isPinnedRight?: boolean;
-  inputType?: "input" | "select";
-  type?: "text" | "number";
-  align?: "left" | "center" | "right";
-  readonly?: boolean;
+  pinneable?: boolean; //ya
+  isPinned?: boolean; //ya
+  type?: "text" | "number" | "date" | "select" | "checkbox"; //medio
+  align?: "left" | "center" | "right"; //ya
+  sortable?: boolean; //ya
+  readonly?: boolean; //ya
+  width?: number; //ya
+  prefix?: string; //ya
+  suffix?: string; //ya
   options?: Option[];
-  width?: number;
   searchable?: boolean;
-  sortable?: boolean;
-  summary?: "sum" | "count";
-  prefix?: string;
-  suffix?: string;
   isHidden?: boolean;
 }
 

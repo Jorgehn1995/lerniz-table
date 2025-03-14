@@ -41,10 +41,10 @@ const bgHeight = computed(() => `${props.items.length * itemHeight}px`);
 
 const headers = ref<Header[]>([]);
 const pinnedHeaders = computed(() =>
-  headers.value.filter((h) => h.isPinnedLeft)
+  headers.value.filter((h) => h.isPinned)
 );
 const viewportHeaders = computed(() =>
-  headers.value.filter((h) => !h.isPinnedLeft)
+  headers.value.filter((h) => !h.isPinned)
 );
 
 const pinnedLeftWidth = computed(
@@ -57,7 +57,7 @@ const pinnedLeftWidth = computed(
 );
 
 const togglePinLeft = (header: Header) => {
-  header.isPinnedLeft = !header.isPinnedLeft;
+  header.isPinned = !header.isPinned;
   showSortMenu.value = false;
 };
 
@@ -112,7 +112,7 @@ function handleViewportHeaderScroll() {
 
 const pinnedFirstColumn = () => {
   if (!viewportHeaders.value.length) return;
-  headers.value[0].isPinnedLeft = true;
+  headers.value[0].isPinned = true;
   showSortMenu.value = false;
 };
 
@@ -656,7 +656,7 @@ const toggleDarkMode = () => {
       >
         <span class="sort-icon">📌</span>
         {{
-          activeHeader?.isPinnedLeft
+          activeHeader?.isPinned
             ? "Desfijar de la izquierda"
             : "Fijar a la izquierda"
         }}
