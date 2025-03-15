@@ -21,9 +21,12 @@ const emit = defineEmits(["header-click"]);
   >
     <div class="header-content">
       {{ header.text }}
-      <span v-if="sortField === header.field" class="sort-indicator">
-        {{ sortDirection === "asc" ? "↑" : "↓" }}
-      </span>
+      <div>
+        <span v-if="sortField === header.field" class="sort-indicator">
+          {{ sortDirection === "asc" ? "↑" : "↓" }}
+        </span>
+        <img src="./icons/dots-vertical.svg" alt="Unchecked" />
+      </div>
     </div>
   </div>
 </template>
@@ -58,8 +61,17 @@ const emit = defineEmits(["header-click"]);
 }
 
 .header-content {
+  width: 100%;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 4px;
+}
+
+.header-content img {
+  width: 20px;
+}
+.sort-indicator {
+  font-size: 20px;
 }
 </style>

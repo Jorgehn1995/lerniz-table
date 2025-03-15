@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Header } from "./types";
+import Check from "./components/check.vue";
 
 defineProps<{
   itemHeight: number;

@@ -776,9 +776,7 @@ const toggleDarkMode = () => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.sort-indicator {
-  font-size: 12px;
-}
+
 
 .row {
   display: flex;
