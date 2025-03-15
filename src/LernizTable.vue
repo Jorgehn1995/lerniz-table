@@ -21,6 +21,7 @@ export interface LernizTableProps<
   editCells?: boolean;
 }
 import TableCell from "./TableCell.vue";
+import TableHeader from "./TableHeader.vue";
 const props = defineProps<LernizTableProps<T>>();
 const itemHeight = 35;
 
@@ -455,19 +456,8 @@ const toggleDarkMode = () => {
 
 <template>
   <div class="component-container" :class="{ 'dark-mode': isDarkMode }">
-    <div class="mode-controls">
-      <button class="pin-button" @click="pinnedFirstColumn">
-        <span>📌 Fijar primera columna</span>
-      </button>
-      <button class="theme-toggle" @click="toggleDarkMode">
-        <span>{{ isDarkMode ? "☀️ Light Mode" : "🌙 Dark Mode" }}</span>
-      </button>
-    </div>
-
     <div class="wrapped">
-      <!-- Header -->
       <div class="header">
-        <!-- Pinned Header -->
         <div
           class="pinned-left"
           :style="{
@@ -477,55 +467,34 @@ const toggleDarkMode = () => {
         >
           <div class="row">
             <div class="cell firstColumn header-cell"></div>
-            <div
-              class="cell header-cell"
+
+            <TableHeader
               v-for="(header, colIndex) in pinnedHeaders"
+              :itemHeight="itemHeight"
               :key="header.field"
-              :style="{
-                width: header.width + 'px',
-                minWidth: header.width + 'px',
-              }"
-              @click="handleHeaderClick($event, header)"
-            >
-              <div class="header-content">
-                {{ header.text }}
-                <span v-if="sortField === header.field" class="sort-indicator">
-                  {{ sortDirection === "asc" ? "↑" : "↓" }}
-                </span>
-              </div>
-            </div>
+              :header="header"
+              :sortDirection="sortDirection"
+              :sortField="sortField"
+              @header-click="handleHeaderClick($event, header)"
+            />
           </div>
         </div>
-
-        <!-- Scrollable Header -->
         <div class="viewport" ref="viewportHeaderRef">
           <div class="row">
-            <div
-              class="cell header-cell"
+            <TableHeader
               v-for="(header, colIndex) in viewportHeaders"
+              :itemHeight="itemHeight"
               :key="header.field"
-              :style="{
-                width: header.width + 'px',
-                minWidth: header.width + 'px',
-              }"
-              @click="handleHeaderClick($event, header)"
-            >
-              <div class="header-content">
-                {{ header.text }}
-                <span v-if="sortField === header.field" class="sort-indicator">
-                  {{ sortDirection === "asc" ? "↑" : "↓" }}
-                </span>
-              </div>
-            </div>
+              :header="header"
+              :sortDirection="sortDirection"
+              :sortField="sortField"
+              @header-click="handleHeaderClick($event, header)"
+            />
           </div>
         </div>
       </div>
-
       <div class="layout">
-        <!-- Cuerpo principal -->
         <div class="main" ref="mainRef" tabindex="0">
-          <!-- Quitar @keydown aquí -->
-          <!-- Pinned Column -->
           <div
             class="pinned-left fit"
             :style="{
@@ -706,7 +675,7 @@ const toggleDarkMode = () => {
 </style>
 
 <style scoped>
-.text-center{
+.text-center {
   text-align: center;
 }
 .component-container {
@@ -792,24 +761,6 @@ const toggleDarkMode = () => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.header-cell {
-  position: relative;
-  cursor: pointer;
-  user-select: none;
-  background: var(--header-bg) !important;
-  color: var(--header-text) !important;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.8rem;
-  letter-spacing: 0.5px;
-}
-
-.header-content {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
 .sort-indicator {
   font-size: 12px;
 }
@@ -866,8 +817,6 @@ const toggleDarkMode = () => {
   border-top: 1px solid var(--border-color);
   transition: all 0.3s ease;
 }
-
-
 
 .sort-menu {
   position: fixed;
