@@ -9,7 +9,7 @@ export interface Header {
   field: string;
   pinneable?: boolean; //ya
   isPinned?: boolean; //ya
-  type?: "text" | "number" | "date" | "select" | "checkbox"; //medio
+  type?: "text" | "number" | "date" | "select" | "checkbox"; //ya
   align?: "left" | "center" | "right"; //ya
   sortable?: boolean; //ya
   readonly?: boolean; //ya
@@ -17,10 +17,8 @@ export interface Header {
   prefix?: string; //ya
   suffix?: string; //ya
   options?: Option[];
-  optionsMap?: Record<string, string>;
+  optionsMap?: Record<string, string>; //ya
   searchable?: boolean;
-  isHidden?: boolean;
-
   onChange?: (newValue: any) => void;
 }
 

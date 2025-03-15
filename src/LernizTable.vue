@@ -20,9 +20,8 @@ export interface LernizTableProps<
   headers: Header[];
   editCells?: boolean;
 }
-
+import TableCell from "./TableCell.vue";
 const props = defineProps<LernizTableProps<T>>();
-
 const itemHeight = 35;
 
 const hoveredRowIndex = ref(-1);
@@ -332,19 +331,18 @@ const focusInput = () => {
   }
 };
 const setFocus = () => {
-  if (activeInput.value) {
-    const element = activeInput.value[0];
-    if (element.tagName === "INPUT") {
-      element.focus();
-      element.select();
-    } else if (element.tagName === "SELECT") {
-      element.focus();
-    } else {
-      console.log("No es un input ni un select");
-    }
-  } else {
-    console.log("no esta");
-  }
+  const cell = document.getElementById(
+    `cell-${selectedRow.value}-${selectedCol.value}`
+  );
+  if (!cell) return console.log("Celda no definida");
+
+  const element = cell.querySelector("input, select") as
+    | HTMLInputElement
+    | HTMLSelectElement;
+  if (!element) return console.log("Input no definido");
+
+  element.focus();
+  if (element instanceof HTMLInputElement) element.select();
 };
 
 const enterSelected = (row: number, col: number) => {
@@ -554,95 +552,24 @@ const toggleDarkMode = () => {
                 <div class="cell firstColumn data-cell">
                   {{ startIndex + rowIndex + 1 }}
                 </div>
-                <div
-                  class="cell data-cell"
+                <TableCell
                   v-for="(header, colIndex) in pinnedHeaders"
                   :key="header.field"
-                  :style="{
-                    width: header.width + 'px',
-                    minWidth: header.width + 'px',
-                  }"
-                  @click="handleCellClick(startIndex + rowIndex, 1 + colIndex)"
-                  @dblclick="enterSelected(startIndex + rowIndex, 1 + colIndex)"
-                  :class="{
-                    selected:
-                      selectedRow === startIndex + rowIndex &&
-                      selectedCol === 1 + colIndex,
-                  }"
-                >
-                  {{ header.prefix }}
-                  <div
-                    v-if="
-                      editCells &&
-                      selectedRow === startIndex + rowIndex &&
-                      selectedCol === 1 + colIndex
-                    "
-                    class="cell-input-container"
-                  >
-                    <input
-                      v-if="
-                        header.type == 'text' ||
-                        header.type == 'date' ||
-                        header.type == 'number'
-                      "
-                      ref="activeInput"
-                      :readonly="header.readonly ?? false"
-                      :class="`cell-input cell-input-number cell-${
-                        header.align ?? 'left'
-                      }`"
-                      :type="header.type ?? 'text'"
-                      v-model="item[header.field]"
-                    />
-                    <select
-                      v-else-if="header.type == 'select'"
-                      ref="activeInput"
-                      :class="`cell-input cell-input-number cell-${
-                        header.align ?? 'left'
-                      }`"
-                      v-model="item[header.field]"
-                    >
-                      <option
-                        class="cell-option"
-                        v-for="(option, i) in header.options"
-                        :value="option.value"
-                      >
-                        {{ option.text }}
-                      </option>
-                    </select>
-                    <input
-                      v-else
-                      ref="activeInput"
-                      :readonly="header.readonly ?? false"
-                      :class="`cell-input cell-input-number cell-input-checkbox cell-${
-                        header.align ?? 'left'
-                      }`"
-                      type="checkbox"
-                      v-model="item[header.field]"
-                    />
-                  </div>
-
-                  <div
-                    v-else
-                    :class="`cell-text cell-${header.align ?? 'left'}`"
-                  >
-                    <span
-                      v-if="
-                        header.type == 'text' ||
-                        header.type == 'date' ||
-                        header.type == 'number'
-                      "
-                    >
-                      {{ item[header.field] }}
-                    </span>
-                    <span v-else-if="header.type == 'select'">
-                      {{ header.optionsMap?.[item[header.field] ?? ""] ?? "-" }}
-                    </span>
-                    <span v-else class="checkbox-text">
-                      {{ item[header.field] ? "✔" : "" }}
-                    </span>
-                  </div>
-                  {{ header.suffix }}
-                </div>
+                  :id="`cell-${startIndex + rowIndex}-${1 + colIndex}`"
+                  :header="header"
+                  :isEdit="editCells ?? true"
+                  :item="item"
+                  :isSelected="
+                    selectedRow === startIndex + rowIndex &&
+                    selectedCol === 1 + colIndex
+                  "
+                  @cell-click="
+                    handleCellClick(startIndex + rowIndex, 1 + colIndex)
+                  "
+                  @cell-dblclick="
+                    enterSelected(startIndex + rowIndex, 1 + colIndex)
+                  "
+                />
               </div>
             </div>
           </div>
@@ -664,105 +591,32 @@ const toggleDarkMode = () => {
                 @mouseleave="hoveredRowIndex = -1"
                 :class="{ hovered: hoveredRowIndex === startIndex + rowIndex }"
               >
-                <div
-                  class="cell data-cell"
+                <TableCell
                   v-for="(header, colIndex) in viewportHeaders"
                   :key="header.field"
-                  :style="{
-                    width: header.width + 'px',
-                    minWidth: header.width + 'px',
-                  }"
-                  @click="
+                  :id="`cell-${startIndex + rowIndex}-${
+                    1 + pinnedHeaders.length + colIndex
+                  }`"
+                  :header="header"
+                  :isEdit="editCells ?? true"
+                  :item="item"
+                  :isSelected="
+                    selectedRow === startIndex + rowIndex &&
+                    selectedCol === 1 + pinnedHeaders.length + colIndex
+                  "
+                  @cell-click="
                     handleCellClick(
                       startIndex + rowIndex,
                       1 + pinnedHeaders.length + colIndex
                     )
                   "
-                  @dblclick="
+                  @cell-dblclick="
                     enterSelected(
                       startIndex + rowIndex,
                       1 + pinnedHeaders.length + colIndex
                     )
                   "
-                  :class="{
-                    selected:
-                      selectedRow === startIndex + rowIndex &&
-                      selectedCol === 1 + pinnedHeaders.length + colIndex,
-                  }"
-                >
-                  {{ header.prefix }}
-                  <div
-                    v-if="
-                      editCells &&
-                      selectedRow === startIndex + rowIndex &&
-                      selectedCol === 1 + pinnedHeaders.length + colIndex
-                    "
-                    class="cell-input-container"
-                  >
-                    <input
-                      v-if="
-                        header.type == 'text' ||
-                        header.type == 'date' ||
-                        header.type == 'number'
-                      "
-                      ref="activeInput"
-                      :readonly="header.readonly ?? false"
-                      :class="`cell-input cell-input-number cell-${
-                        header.align ?? 'left'
-                      }`"
-                      :type="header.type ?? 'text'"
-                      v-model="item[header.field]"
-                    />
-                    <select
-                      v-else-if="header.type == 'select'"
-                      ref="activeInput"
-                      :class="`cell-input cell-input-number cell-${
-                        header.align ?? 'left'
-                      }`"
-                      v-model="item[header.field]"
-                    >
-                      <option
-                        class="cell-option"
-                        v-for="(option, i) in header.options"
-                        :value="option.value"
-                      >
-                        {{ option.text }}
-                      </option>
-                    </select>
-                    <input
-                      v-else
-                      ref="activeInput"
-                      :readonly="header.readonly ?? false"
-                      :class="`cell-input cell-input-number cell-input-checkbox cell-${
-                        header.align ?? 'left'
-                      }`"
-                      type="checkbox"
-                      v-model="item[header.field]"
-                    />
-                  </div>
-
-                  <div
-                    v-else
-                    :class="`cell-text cell-${header.align ?? 'left'}`"
-                  >
-                    <span
-                      v-if="
-                        header.type == 'text' ||
-                        header.type == 'date' ||
-                        header.type == 'number'
-                      "
-                    >
-                      {{ item[header.field] }}
-                    </span>
-                    <span v-else-if="header.type == 'select'">
-                      {{ header.optionsMap?.[item[header.field] ?? ""] ?? "-" }}
-                    </span>
-                    <span v-else class="checkbox-text">
-                      {{ item[header.field] ? "✔" : "" }}
-                    </span>
-                  </div>
-                  {{ header.suffix }}
-                </div>
+                />
               </div>
             </div>
           </div>
@@ -828,82 +682,6 @@ const toggleDarkMode = () => {
   opacity: 0.5; /* Da un efecto visual de deshabilitado */
   cursor: not-allowed; /* Cambia el cursor para indicar que no se puede hacer clic */
   pointer-events: none;
-}
-.cell-input-container {
-  width: 100%;
-}
-.cell-text,
-.cell-input {
-  width: 100%;
-  height: 100%;
-  border: none;
-  outline: none;
-  background: transparent;
-  font: inherit;
-  font-size: inherit;
-  color: inherit;
-  display: flex; /* Asegura que ambos elementos se comporten igual */
-  align-items: center; /* Centra verticalmente el contenido */
-  line-height: 1;
-  vertical-align: middle;
-}
-.cell-input-checkbox {
-  
-  accent-color: #3f51b5;
-}
-.cell-option {
-  width: 100%;
-  font: inherit; /* Hereda la fuente del contenedor */
-  font-size: inherit; /* Hereda el tamaño de la fuente */
-  color: inherit; /* Hereda el color del texto */
-  background-color: transparent; /* Fondo transparente */
-  padding: 8px 12px; /* Espaciado interno para mejor legibilidad */
-  border: none; /* Sin bordes */
-  outline: none; /* Sin contorno al enfocar */
-  appearance: none; /* Elimina el estilo por defecto del navegador */
-  -webkit-appearance: none; /* Para compatibilidad con Safari */
-  -moz-appearance: none; /* Para compatibilidad con Firefox */
-  cursor: pointer; /* Cambia el cursor a pointer para indicar que es clickeable */
-  transition: background-color 0.2s ease, color 0.2s ease; /* Transición suave */
-}
-
-/* Estilo para cuando el option está seleccionado o en hover */
-.cell-option:checked,
-.cell-option:hover {
-  background-color: rgba(
-    0,
-    0,
-    0,
-    0.1
-  ); /* Fondo ligeramente oscuro al seleccionar o pasar el mouse */
-  color: #333; /* Cambia el color del texto para mejorar el contraste */
-}
-
-/* Estilo para el foco (accesibilidad) */
-.cell-option:focus {
-  background-color: rgba(0, 0, 0, 0.05); /* Fondo más claro al enfocar */
-  color: #000; /* Texto más oscuro para mejor legibilidad */
-}
-
-.cell-center {
-  text-align: center;
-  justify-content: center; /* Centra horizontalmente el contenido */
-}
-
-.cell-left {
-  text-align: left;
-  justify-content: flex-start; /* Asegura alineación a la izquierda */
-}
-
-.cell-right {
-  text-align: right;
-  justify-content: flex-end; /* Asegura alineación a la derecha */
-}
-
-.cell-input-number::-webkit-inner-spin-button,
-.cell-input-number::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
 }
 
 .sort-menu-title {
@@ -1041,24 +819,6 @@ const toggleDarkMode = () => {
   background: var(--row-hover);
 }
 
-.cell {
-  height: v-bind(itemHeight + "px");
-  padding: 0 0.8rem;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  border-right: 1px solid var(--border-color);
-  border-bottom: 1px solid var(--border-color);
-  background: var(--cell-bg);
-  color: var(--text-color);
-  box-sizing: border-box;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  cursor: pointer;
-  transition: background 0.3s ease, color 0.3s ease;
-}
-
 .firstColumn {
   width: 50px;
   min-width: 50px;
@@ -1100,17 +860,7 @@ const toggleDarkMode = () => {
   transition: all 0.3s ease;
 }
 
-.selected {
-  background: rgba(99, 102, 241, 0.15) !important;
-  outline: 2px solid #6366f1;
-  outline-offset: -2px;
-  z-index: 1;
-  position: relative;
-}
 
-.dark-mode .selected {
-  outline-color: #818cf8;
-}
 
 .sort-menu {
   position: fixed;
