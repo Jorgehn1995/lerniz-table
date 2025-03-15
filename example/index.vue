@@ -1,10 +1,13 @@
 <script setup>
-import LernizTable from '../src/LernizTable.vue';
+import LernizTable from "../src/LernizTable.vue";
 import { items, headers } from "./items.ts";
+const makeChange = ({ item, header }) => {
+  console.log(item, header);
+};
 </script>
 
 <template>
-  <LernizTable :items="items" :headers="headers" edit-cells>
+  <LernizTable :items="items" :headers="headers" edit-cells @change="makeChange">
     <template #custom-menu-items="{ header }">
       <div class="sort-menu-item">
         <span class="sort-icon">📌</span>

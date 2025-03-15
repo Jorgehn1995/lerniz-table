@@ -9,7 +9,7 @@ defineProps<{
   isEdit: boolean;
 }>();
 
-const emit = defineEmits(["cell-click", "cell-dblclick"]);
+const emit = defineEmits(["cell-click", "cell-dblclick", "cell-change"]);
 </script>
 
 <template>
@@ -34,12 +34,14 @@ const emit = defineEmits(["cell-click", "cell-dblclick"]);
         :class="`cell-input cell-${header.align ?? 'left'}`"
         :type="header.type ?? 'text'"
         v-model="item[header.field]"
+        @change="emit('cell-change')"
       />
       <select
         v-else-if="header.type === 'select'"
         ref="activeInput"
         class="cell-input cell-input-select"
         v-model="item[header.field]"
+        @change="emit('cell-change')"
       >
         <option
           v-for="(option, i) in header.options"
@@ -52,6 +54,7 @@ const emit = defineEmits(["cell-click", "cell-dblclick"]);
       </select>
       <input
         v-else
+        @change="emit('cell-change')"
         ref="activeInput"
         type="checkbox"
         :readonly="header.readonly ?? false"
@@ -76,7 +79,8 @@ const emit = defineEmits(["cell-click", "cell-dblclick"]);
   </div>
 </template>
 <style scoped>
-.prefix, .suffix{
+.prefix,
+.suffix {
   opacity: 0.7;
 }
 .selected {

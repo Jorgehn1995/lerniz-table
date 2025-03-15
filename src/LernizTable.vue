@@ -12,6 +12,8 @@ import {
   defineProps,
 } from "vue";
 import { Header } from "./types";
+import TableCell from "./TableCell.vue";
+import TableHeader from "./TableHeader.vue";
 
 export interface LernizTableProps<
   T extends Record<string, string | number | null>
@@ -20,8 +22,9 @@ export interface LernizTableProps<
   headers: Header[];
   editCells?: boolean;
 }
-import TableCell from "./TableCell.vue";
-import TableHeader from "./TableHeader.vue";
+
+const emit = defineEmits(["change"]);
+
 const props = defineProps<LernizTableProps<T>>();
 const itemHeight = 35;
 
@@ -539,6 +542,12 @@ const toggleDarkMode = () => {
                   @cell-dblclick="
                     enterSelected(startIndex + rowIndex, 1 + colIndex)
                   "
+                  @cell-change="
+                    emit('change', {
+                      header,
+                      item,
+                    })
+                  "
                 />
               </div>
             </div>
@@ -586,6 +595,12 @@ const toggleDarkMode = () => {
                       startIndex + rowIndex,
                       1 + pinnedHeaders.length + colIndex
                     )
+                  "
+                  @cell-change="
+                    emit('change', {
+                      header,
+                      item,
+                    })
                   "
                 />
               </div>
