@@ -555,6 +555,7 @@ const toggleDarkMode = () => {
                 <TableCell
                   v-for="(header, colIndex) in pinnedHeaders"
                   :key="header.field"
+                  :itemHeight="itemHeight"
                   :id="`cell-${startIndex + rowIndex}-${1 + colIndex}`"
                   :header="header"
                   :isEdit="editCells ?? true"
@@ -594,6 +595,7 @@ const toggleDarkMode = () => {
                 <TableCell
                   v-for="(header, colIndex) in viewportHeaders"
                   :key="header.field"
+                  :itemHeight="itemHeight"
                   :id="`cell-${startIndex + rowIndex}-${
                     1 + pinnedHeaders.length + colIndex
                   }`"

@@ -2,6 +2,7 @@
 import { Header } from "./types";
 
 defineProps<{
+  itemHeight: number;
   header: Header;
   item: any;
   isSelected: boolean;
@@ -22,7 +23,9 @@ const emit = defineEmits(["cell-click", "cell-dblclick"]);
     @dblclick="emit('cell-dblclick')"
     :class="{ selected: isSelected }"
   >
-    {{ header.prefix }}
+    <span class="prefix">
+      {{ header.prefix }}
+    </span>
     <div v-if="isEdit && isSelected" class="cell-input-container">
       <input
         v-if="['text', 'date', 'number'].includes(header.type ?? 'text')"
@@ -67,10 +70,15 @@ const emit = defineEmits(["cell-click", "cell-dblclick"]);
         {{ item[header.field] ? "✔" : "" }}
       </span>
     </div>
-    {{ header.suffix }}
+    <div class="suffix">
+      {{ header.suffix }}
+    </div>
   </div>
 </template>
 <style scoped>
+.prefix, .suffix{
+  opacity: 0.7;
+}
 .selected {
   background: rgba(99, 102, 241, 0.15) !important;
   outline: 2px solid #6366f1;
