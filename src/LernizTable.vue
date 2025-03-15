@@ -549,7 +549,7 @@ const toggleDarkMode = () => {
                 @mouseleave="hoveredRowIndex = -1"
                 :class="{ hovered: hoveredRowIndex === startIndex + rowIndex }"
               >
-                <div class="cell firstColumn data-cell">
+                <div class="firstColumn data-cell text-center">
                   {{ startIndex + rowIndex + 1 }}
                 </div>
                 <TableCell
@@ -704,6 +704,9 @@ const toggleDarkMode = () => {
 </style>
 
 <style scoped>
+.text-center{
+  text-align: center;
+}
 .component-container {
   --header-bg: #f8f9fa;
   --header-text: #454545;
@@ -828,6 +831,8 @@ const toggleDarkMode = () => {
   font-weight: 500;
   background: var(--first-column-bg);
   cursor: default;
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .layout .main {
