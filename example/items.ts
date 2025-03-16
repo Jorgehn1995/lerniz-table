@@ -150,7 +150,7 @@ const headers: Header[] = [
   {
     title: "Nombre",
     field: "name",
-    width: 250,
+    width: 200,
     type: "text",
     readonly: true,
     sortable: false,
@@ -170,27 +170,17 @@ const headers: Header[] = [
   {
     title: "B",
     field: "b",
-    width: 180,
-    type: "checkbox",
-    align: "center",
+    width: 120,
+    type: "number",
     readonly: false,
   },
   {
     title: "C",
     field: "c",
     width: 120,
-    type: "select",
+    type: "number",
     readonly: false,
-    options: [
-      {
-        value: 1,
-        text: "Primero",
-      },
-      {
-        value: 2,
-        text: "Segundo",
-      },
-    ],
+    
   },
   {
     title: "D",
