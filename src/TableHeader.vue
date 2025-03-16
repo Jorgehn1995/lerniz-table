@@ -20,7 +20,11 @@ const emit = defineEmits(["header-click"]);
     @click="emit('header-click', $event)"
   >
     <div class="header-content">
-      {{ header.text }}
+      <div class="header-text">
+        {{ header.title }}
+        <br />
+        {{ header.subtitle }}
+      </div>
       <div>
         <span v-if="sortField === header.field" class="sort-indicator">
           {{ sortDirection === "asc" ? "↑" : "↓" }}
@@ -31,16 +35,22 @@ const emit = defineEmits(["header-click"]);
   </div>
 </template>
 <style scoped>
+.header-text {
+  white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+  overflow: hidden; /* Oculta el texto que no cabe */
+  text-overflow: ellipsis; /* Muestra "..." cuando el texto es truncado */
+  width: 200px; /* Ajusta el ancho del contenedor */
+}
 .cell {
-  height: v-bind(itemHeight + "px");
+  height: v-bind((itemHeight * 2) + "px");
   padding: 0 0.8rem;
   display: flex;
   align-items: center;
   gap: 2px;
   border-right: 1px solid var(--border-color);
   border-bottom: 1px solid var(--border-color);
-  background: var(--cell-bg);
-  color: var(--text-color);
+  background: var(--header-bg);
+  color: var(--header-text);
   box-sizing: border-box;
   white-space: nowrap;
   overflow: hidden;

@@ -466,10 +466,11 @@ const toggleDarkMode = () => {
           :style="{
             width: pinnedLeftWidth + 'px',
             minWidth: pinnedLeftWidth + 'px',
+            height: itemHeight * 1.78 + 'px',
           }"
         >
-          <div class="row">
-            <div class="cell firstColumn header-cell"></div>
+          <div class="row" :style="{ height: itemHeight * 1.5 + 'px' }">
+            <div class="firstColumn"></div>
 
             <TableHeader
               v-for="(header, colIndex) in pinnedHeaders"
@@ -482,8 +483,8 @@ const toggleDarkMode = () => {
             />
           </div>
         </div>
-        <div class="viewport" ref="viewportHeaderRef">
-          <div class="row">
+        <div class="viewport" ref="viewportHeaderRef" :style="{ height: itemHeight * 1.78 + 'px' }">
+          <div class="row" :style="{ height: itemHeight * 1.5 + 'px' }">
             <TableHeader
               v-for="(header, colIndex) in viewportHeaders"
               :itemHeight="itemHeight"
@@ -628,7 +629,7 @@ const toggleDarkMode = () => {
       }"
     >
       <div class="sort-menu-title">
-        {{ activeHeader?.text }}
+        {{ activeHeader?.title }}
       </div>
       <div
         class="sort-menu-item"
@@ -694,9 +695,12 @@ const toggleDarkMode = () => {
   text-align: center;
 }
 .component-container {
+  --primary-color: 63, 81, 181;
+  --muted-color: 248, 249, 250;
+
   --header-bg: #f8f9fa;
   --header-text: #454545;
-  --first-column-bg: #f8f9fa;
+  --first-column-bg: rgb(187, 187, 187, 0.1);
   --row-hover: rgba(63, 81, 181, 0.05);
   --border-color: #e0e0e0;
   --cell-bg: white;
@@ -775,8 +779,6 @@ const toggleDarkMode = () => {
   z-index: 2;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
-
-
 
 .row {
   display: flex;

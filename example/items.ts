@@ -479,7 +479,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -958,7 +959,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -1437,7 +1439,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -1916,7 +1919,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -2395,7 +2399,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -2874,7 +2879,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -3353,7 +3359,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -3832,7 +3839,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -4311,7 +4319,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -4790,7 +4799,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -5269,7 +5279,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -5748,7 +5759,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -6227,7 +6239,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -6706,7 +6719,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -7185,7 +7199,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -7664,7 +7679,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -8143,7 +8159,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -8622,7 +8639,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -9101,7 +9119,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -9580,7 +9599,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -10059,7 +10079,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -10538,7 +10559,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -11017,7 +11039,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -11496,7 +11519,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -11975,7 +11999,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -12454,7 +12479,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -12933,7 +12959,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -13412,7 +13439,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -13891,7 +13919,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -14370,7 +14399,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -14849,7 +14879,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -15328,7 +15359,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -15807,7 +15839,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -16286,7 +16319,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -16765,7 +16799,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -17244,7 +17279,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -17723,7 +17759,8 @@ const items = [
     s: null,
     t: null,
     u: null,
-  },{
+  },
+  {
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -18207,7 +18244,7 @@ const items = [
 
 const headers: Header[] = [
   {
-    text: "Nombre",
+    title: "Nombre",
     field: "name",
     width: 250,
     type: "text",
@@ -18216,7 +18253,8 @@ const headers: Header[] = [
     pinneable: false,
   },
   {
-    text: "A",
+    title: "Calificacion de Cuaderno",
+    subtitle: "5 pts",
     field: "a",
     width: 120,
     type: "number",
@@ -18226,102 +18264,102 @@ const headers: Header[] = [
     suffix: "pts",
   },
   {
-    text: "B",
+    title: "B",
     field: "b",
     width: 180,
     type: "checkbox",
-    align:"center",
+    align: "center",
     readonly: false,
   },
   {
-    text: "C",
+    title: "C",
     field: "c",
     width: 120,
     type: "select",
     readonly: false,
-    options:[
+    options: [
       {
-        value:1,
-        text:"Primero"
+        value: 1,
+        text: "Primero",
       },
       {
-        value:2,
-        text:"Segundo"
-      }
-    ]
+        value: 2,
+        text: "Segundo",
+      },
+    ],
   },
   {
-    text: "D",
+    title: "D",
     field: "d",
     width: 120,
     type: "number",
     readonly: false,
   },
   {
-    text: "E",
+    title: "E",
     field: "e",
     width: 120,
     type: "number",
     readonly: false,
   },
   {
-    text: "F",
+    title: "F",
     field: "f",
     width: 120,
     type: "number",
     readonly: false,
   },
   {
-    text: "G",
+    title: "G",
     field: "g",
     width: 120,
     type: "number",
     readonly: false,
   },
   {
-    text: "A",
+    title: "A",
     field: "a",
     width: 120,
     type: "number",
     readonly: false,
   },
   {
-    text: "B",
+    title: "B",
     field: "b",
     width: 120,
     type: "number",
     readonly: false,
   },
   {
-    text: "C",
+    title: "C",
     field: "c",
     width: 120,
     type: "number",
     readonly: false,
   },
   {
-    text: "D",
+    title: "D",
     field: "d",
     width: 120,
     type: "number",
     readonly: false,
   },
   {
-    text: "E",
+    title: "E",
     field: "e",
     width: 120,
     type: "number",
     readonly: false,
   },
   {
-    text: "F",
+    title: "F",
     field: "f",
     width: 120,
     type: "number",
     readonly: false,
   },
   {
-    text: "G",
+    title: "G",
     field: "g",
     width: 120,
     type: "number",

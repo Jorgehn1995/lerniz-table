@@ -5,7 +5,8 @@ export interface Option {
 
 export interface Header {
   id?: string;
-  text: string;
+  title: string;
+  subtitle?:string;
   field: string;
   pinneable?: boolean; //ya
   isPinned?: boolean; //ya

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { nextTick, ref } from "vue";
 import { Header } from "./types";
 
 defineProps<{
@@ -10,10 +11,26 @@ defineProps<{
 }>();
 
 const emit = defineEmits(["cell-click", "cell-dblclick", "cell-change"]);
+const cellRef = ref<HTMLElement | null>(null);
+
+const makeChange = (e: any) => {
+  emit("cell-change");
+  const cell = cellRef.value;
+  if (cell) {
+    console.log("sucio");
+    nextTick(() => {
+      // Agregar atributo data-dirty en lugar de clase
+      cell.setAttribute('data-dirty', 'true');
+      console.log(cell);
+    });
+  }
+};
+
 </script>
 
 <template>
   <div
+    ref="cellRef"
     class="cell data-cell"
     :style="{
       width: header.width + 'px',
@@ -34,14 +51,14 @@ const emit = defineEmits(["cell-click", "cell-dblclick", "cell-change"]);
         :class="`cell-input cell-${header.align ?? 'left'}`"
         :type="header.type ?? 'text'"
         v-model="item[header.field]"
-        @change="emit('cell-change')"
+        @change="makeChange"
       />
       <select
         v-else-if="header.type === 'select'"
         ref="activeInput"
         class="cell-input cell-input-select"
         v-model="item[header.field]"
-        @change="emit('cell-change')"
+        @change="makeChange"
       >
         <option
           v-for="(option, i) in header.options"
@@ -54,7 +71,7 @@ const emit = defineEmits(["cell-click", "cell-dblclick", "cell-change"]);
       </select>
       <input
         v-else
-        @change="emit('cell-change')"
+        @change="makeChange"
         ref="activeInput"
         type="checkbox"
         :readonly="header.readonly ?? false"
@@ -176,7 +193,7 @@ input[type="number"]::-webkit-outer-spin-button {
   vertical-align: middle;
 }
 .cell-input-checkbox {
-  accent-color: #3f51b5;
+  accent-color: rgb(63, 81, 181);
 }
 .cell-option {
   width: 100%;
@@ -192,5 +209,33 @@ input[type="number"]::-webkit-outer-spin-button {
   -moz-appearance: none; /* Para compatibilidad con Firefox */
   cursor: pointer; /* Cambia el cursor a pointer para indicar que es clickeable */
   transition: background-color 0.2s ease, color 0.2s ease; /* Transición suave */
+}
+
+[data-dirty="true"] {
+  background-color: rgba(63, 81, 181, 0.1);
+}
+
+@keyframes dirtyEffect {
+  0% {
+    box-shadow: 0 0 10px rgba(63, 81, 181, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 30px rgba(63, 81, 181, 0.3);
+  }
+
+  100% {
+    box-shadow: 0 0 10px rgba(63, 81, 181, 0.2);
+  }
+}
+
+@keyframes dirtyFadeIn {
+  0% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 </style>

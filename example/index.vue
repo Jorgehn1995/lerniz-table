@@ -2,7 +2,7 @@
 import LernizTable from "../src/LernizTable.vue";
 import { items, headers } from "./items.ts";
 const makeChange = ({ item, header }) => {
-  console.log(item, header);
+  //console.log(item, header);
 };
 </script>
 
