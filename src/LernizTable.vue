@@ -483,7 +483,11 @@ const toggleDarkMode = () => {
             />
           </div>
         </div>
-        <div class="viewport" ref="viewportHeaderRef" :style="{ height: itemHeight * 1.77 + 'px' }">
+        <div
+          class="viewport"
+          ref="viewportHeaderRef"
+          :style="{ height: itemHeight * 1.77 + 'px' }"
+        >
           <div class="row" :style="{ height: itemHeight * 1.5 + 'px' }">
             <TableHeader
               v-for="(header, colIndex) in viewportHeaders"
@@ -695,32 +699,27 @@ const toggleDarkMode = () => {
   text-align: center;
 }
 .component-container {
-  --primary-color: 63, 81, 181;
-  --muted-color: 248, 249, 250;
+  --theme-primary: 34, 19, 107;
+  --theme-secondary: 94, 227, 242;
+  --theme-muted: 0, 0, 0;
+  --theme-bg: 255, 255, 255;
 
-  --header-bg: #f8f9fa;
-  --header-text: #454545;
-  --first-column-bg: rgb(187, 187, 187, 0.1);
-  --row-hover: rgba(63, 81, 181, 0.05);
-  --border-color: #e0e0e0;
-  --cell-bg: white;
-  --scroll-info-bg: #f8f9fa;
-  --scroll-info-text: #666;
-  --component-bg: white;
-  --text-color: #333;
-}
+  --selected-bg: rgb(var(--theme-primary));
 
-.component-container.dark-mode {
-  --header-bg: #2d2d2d;
-  --header-text: #e0e0e0;
-  --first-column-bg: #252525;
-  --row-hover: rgba(99, 102, 241, 0.1);
-  --border-color: #404040;
-  --cell-bg: #1a1a1a;
-  --scroll-info-bg: #2d2d2d;
-  --scroll-info-text: #b0b0b0;
-  --component-bg: #121212;
-  --text-color: #e0e0e0;
+  --header-bg: rgb(var(--theme-muted), 0.03);
+  --header-text: rgb(var(--theme-muted), 0.75);
+  --cell-text: rgb(var(--theme-muted), 0.75);
+  --cell-bg: rgb(var(--theme-bg));
+
+  --first-column-bg: rgb(var(--theme-muted), 0.03);
+  --row-hover: rgb(var(--theme-muted), 0.04);
+
+  --border-color: rgb(var(--theme-muted), 0.06);
+  --text-color: rgb(var(--theme-muted), 0.75);
+  --component-bg: rgb(var(--theme-bg));
+
+  --scroll-info-bg: rgb(var(--theme-bg));
+  --scroll-info-text: rgb(var(--theme-muted));
 }
 
 .component-container {
@@ -735,33 +734,6 @@ const toggleDarkMode = () => {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1rem;
-}
-.checkbox-text {
-  color: #3f51b5;
-}
-.pin-button,
-.theme-toggle {
-  background: #3f51b5;
-  color: white;
-  border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.dark-mode .pin-button,
-.dark-mode .theme-toggle {
-  background: #6366f1;
-}
-
-.pin-button:hover,
-.theme-toggle:hover {
-  filter: brightness(1.1);
 }
 
 .wrapped {
@@ -812,9 +784,9 @@ const toggleDarkMode = () => {
 }
 
 .pinned-left {
-  background: var(--first-column-bg);
+  
   z-index: 1;
-  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0px 0 10px rgba(var(--theme-muted), 0.06);
 }
 
 .viewport {
@@ -846,17 +818,8 @@ const toggleDarkMode = () => {
   margin-top: 2px; /* Small gap between header and menu */
 }
 
-.dark-mode .sort-menu {
-  background: #2d2d2d;
-  border-color: #404040;
-}
-
 .sort-menu-item:hover {
-  background-color: #f5f5f5;
-}
-
-.dark-mode .sort-menu-item:hover {
-  background-color: #404040;
+  background-color: rgb(var(--theme-muted), 0.05);
 }
 
 .sort-icon {
@@ -888,19 +851,11 @@ const toggleDarkMode = () => {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #4a4a4a;
+  background: rgb(var(--theme-muted), 0.3);
   border-radius: 4px;
 }
 
-.dark-mode ::-webkit-scrollbar-thumb {
-  background: #6366f1;
-}
-
 ::-webkit-scrollbar-thumb:hover {
-  background: #717171;
-}
-
-.dark-mode ::-webkit-scrollbar-thumb:hover {
-  background: #818cf8;
+  background: rgb(var(--theme-muted), 0.4);
 }
 </style>

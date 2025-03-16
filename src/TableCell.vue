@@ -20,12 +20,11 @@ const makeChange = (e: any) => {
     console.log("sucio");
     nextTick(() => {
       // Agregar atributo data-dirty en lugar de clase
-      cell.setAttribute('data-dirty', 'true');
+      cell.setAttribute("data-dirty", "true");
       console.log(cell);
     });
   }
 };
-
 </script>
 
 <template>
@@ -96,21 +95,21 @@ const makeChange = (e: any) => {
   </div>
 </template>
 <style scoped>
+.checkbox-text {
+  color: var(--text-color);
+}
 .prefix,
 .suffix {
   opacity: 0.7;
 }
 .selected {
-  background: rgba(99, 102, 241, 0.15) !important;
-  outline: 2px solid #6366f1;
+  background: rgba(var(--theme-primary), 0.15) !important;
+  outline: 2px solid rgb(var(--theme-primary));
   outline-offset: -2px;
   z-index: 1;
   position: relative;
 }
 
-.dark-mode .selected {
-  outline-color: #818cf8;
-}
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
@@ -148,13 +147,13 @@ input[type="number"]::-webkit-outer-spin-button {
     0,
     0.1
   ); /* Fondo ligeramente oscuro al seleccionar o pasar el mouse */
-  color: #333; /* Cambia el color del texto para mejorar el contraste */
+  color: rgb(var(--theme-muted),0.8); /* Cambia el color del texto para mejorar el contraste */
 }
 
 /* Estilo para el foco (accesibilidad) */
 .cell-option:focus {
-  background-color: rgba(0, 0, 0, 0.05); /* Fondo más claro al enfocar */
-  color: #000; /* Texto más oscuro para mejor legibilidad */
+  background-color: rgba(var(--theme-muted), 0.05); /* Fondo más claro al enfocar */
+  color: rgba(var(--theme-muted), 1);; /* Texto más oscuro para mejor legibilidad */
 }
 
 .cell-center {
@@ -193,7 +192,7 @@ input[type="number"]::-webkit-outer-spin-button {
   vertical-align: middle;
 }
 .cell-input-checkbox {
-  accent-color: rgb(63, 81, 181);
+  accent-color: rgb(var(--theme-primary));
 }
 .cell-option {
   width: 100%;
@@ -212,30 +211,9 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 [data-dirty="true"] {
-  background-color: rgba(63, 81, 181, 0.1);
+  
+  background-color: rgb(var(--theme-primary), 0.01);
+  box-shadow: inset 0 0 30px rgba(var(--theme-primary), 0.04);
 }
 
-@keyframes dirtyEffect {
-  0% {
-    box-shadow: 0 0 10px rgba(63, 81, 181, 0.2);
-  }
-
-  50% {
-    box-shadow: 0 0 30px rgba(63, 81, 181, 0.3);
-  }
-
-  100% {
-    box-shadow: 0 0 10px rgba(63, 81, 181, 0.2);
-  }
-}
-
-@keyframes dirtyFadeIn {
-  0% {
-    opacity: 0.5;
-  }
-
-  100% {
-    opacity: 1;
-  }
-}
 </style>
