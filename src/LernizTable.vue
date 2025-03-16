@@ -22,6 +22,7 @@ export interface LernizTableProps<
   headers: Header[];
   editCells?: boolean;
   height?: number;
+  footer?:boolean;
 }
 
 const emit = defineEmits(["change"]);
@@ -620,7 +621,7 @@ const toggleDarkMode = () => {
         </div>
 
         <!-- Info de scroll -->
-        <div class="scroll-info">
+        <div class="scroll-info" v-if="footer??true">
           <div v-if="false">
             Visible Items {{ visibleItems.length }} | Scroll vertical:
             {{ scrollY }} px | Scroll horizontal: {{ scrollX }} px | Row hover:
@@ -800,6 +801,10 @@ const toggleDarkMode = () => {
   overflow-x: auto;
   position: relative;
   overflow-y: hidden;
+
+}
+.main .viewport::-webkit-scrollbar {
+  display: none; /* Chrome, Safari y Opera */
 }
 
 .scroll-info {
