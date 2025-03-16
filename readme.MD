@@ -2,148 +2,163 @@
 
 ![Lerniz Table](https://img.shields.io/npm/v/lerniz-table.svg?style=flat-square)
 
-**Lerniz Table** is a reusable table component for Vue 3 that keeps the first row and first column fixed. Designed to facilitate data visualization in large tables. Additionally, it simulates Excel-like behavior, allowing navigation with arrow keys when `data-col` and `data-row` attributes are added to inputs inside the table.
+A Vue 3 table component that provides Excel-like functionality with fixed headers and columns. Features keyboard navigation, sorting, and customizable slots.
 
-To activate keyboard navigation within inputs, each input must include `data-col` and `data-row` attributes, specifying the column and row it belongs to. This enables smooth movement using the arrow keys.
+## 📦 Installation
 
-## 📸 Table Previews
-
-### Desktop View
-<img src="https://api.lerniz.com/storage/lerniz-table-desktop.png" width="800px" alt="Lerniz Table Desktop">
-
-### Mobile View
-<img src="https://api.lerniz.com/storage/lerniz-table-mobile.png" width="400px" alt="Lerniz Table Mobile">
-
----
-
-## 🚀 Installation
-
-You can install the package using **pnpm**, **npm**, or **yarn**:
-
-### Using pnpm:
-```sh
+```bash
+# Using pnpm (recommended)
 pnpm add lerniz-table
-```
 
-### Using npm:
-```sh
+# Using npm
 npm install lerniz-table
-```
 
-### Using yarn:
-```sh
+# Using yarn
 yarn add lerniz-table
 ```
 
----
+## 🔧 Component Props
 
-## 📌 Usage
-
-### 1️⃣ **Global Import (Vue Plugin)**
-If you want to use the component globally, import and register it in your `main.ts` or `main.js`:
-
-```ts
-import { createApp } from 'vue';
-import LernizTable from 'lerniz-table';
-import App from './App.vue';
-
-const app = createApp(App);
-app.use(LernizTable);
-app.mount('#app');
+```typescript
+interface LernizTableProps<T extends Record<string, string | number | null>> {
+  // Required Props
+  items: T[]          // Array of data items to display
+  headers: Header[]   // Array of column definitions
+  
+  // Optional Props
+  editCells?: boolean // Enable cell editing (default: false)
+  height?: number     // Fixed viewport height (default: auto)
+  footer?: boolean    // Show footer row (default: false)
+}
 ```
 
-### 2️⃣ **Individual Import (Vue Component)**
-If you only need to use it in a specific component, import it directly:
+## 📋 Header Structure
+
+Headers must follow this structure:
+
+```typescript
+interface Header {
+  field: string      // Property name from data items
+  label: string      // Display text for column
+  width?: number     // Column width in pixels
+  type?: 'text' | 'number'  // Data type for sorting
+  isPinned?: boolean // Pin column to left side
+}
+```
+
+### Example Header Configuration:
+
+```javascript
+const headers = [
+  {
+    field: 'id',
+    label: 'ID',
+    width: 80,
+    type: 'number',
+    isPinned: true
+  },
+  {
+    field: 'name',
+    label: 'Name',
+    width: 200,
+    type: 'text'
+  }
+]
+```
+
+## 🎯 Usage Example
 
 ```vue
-<script setup>
-import { LernizTable } from 'lerniz-table';
-</script>
-
 <template>
-  <LernizTable :isLoadingTable="false" :tableID="'my-table'" :zoom="100" :height="400" :showTable="true">
-    <template #toolbar-top>
-      <button>Button in top toolbar</button>
-    </template>
-    <template #first-cell>
-      📌
-    </template>
-    <template #columns>
-      <th>Column 1</th>
-      <th>Column 2</th>
-    </template>
-    <template #rows>
-      <tr>
-        <td>Row 1</td>
-        <td><input type="text" data-col="1" data-row="1"></td>
-        <td><input type="text" data-col="2" data-row="1"></td>
-      </tr>
+  <LernizTable
+    :items="items"
+    :headers="headers"
+    :editCells="true"
+    :height="400"
+  >
+    <!-- Custom Menu Items Slot -->
+    <template #custom-menu-items="{ header }">
+      <button @click="handleHeaderAction(header)">
+        Custom Action
+      </button>
     </template>
   </LernizTable>
 </template>
+
+<script setup>
+const items = [
+  { id: 1, name: 'John Doe', age: 30 },
+  { id: 2, name: 'Jane Smith', age: 25 }
+]
+
+const headers = [
+  { field: 'id', label: 'ID', width: 80, type: 'number' },
+  { field: 'name', label: 'Name', width: 200 },
+  { field: 'age', label: 'Age', width: 100, type: 'number' }
+]
+</script>
 ```
 
----
+## 🎨 Available Slots
 
-## ⚙️ **Available Props**
+| Slot Name | Parameters | Description |
+|-----------|------------|-------------|
+| `custom-menu-items` | `{ header: { col: number, element: HTMLElement } }` | Add custom menu items to column header context menu |
+| `toolbar-top` | - | Content above the table |
+| `toolbar-bottom` | - | Content below the table |
+| `first-cell` | - | Content for top-left fixed cell |
+| `columns` | - | Custom column header rendering |
+| `rows` | - | Custom row rendering |
+| `blank` | - | Content when table is hidden |
 
-| Prop             | Type           | Default   | Description |
-|-----------------|---------------|-----------|-------------|
-| `isLoadingTable` | `Boolean`      | `false`   | Displays a loading indicator in the table. |
-| `tableID`       | `String`       | `'table'` | Unique identifier for the table. |
-| `zoom`          | `Number/String` | `100`    | Controls the zoom level of the table. |
-| `height`        | `Number`       | `0`       | Table height in pixels. |
-| `showTable`     | `Boolean`      | `true`    | Shows or hides the table. |
+## ⌨️ Keyboard Navigation
 
----
+For Excel-like keyboard navigation, add `data-col` and `data-row` attributes to input elements:
 
-## 🎭 **Available Slots**
+```vue
+<input 
+  type="text" 
+  :data-col="columnIndex"
+  :data-row="rowIndex"
+  v-model="value"
+>
+```
 
-| Slot           | Description |
-|---------------|-------------|
-| `toolbar-top` | Area for buttons or options at the top of the table. |
-| `toolbar-bottom` | Area for buttons or options at the bottom of the table. |
-| `first-cell`  | Content of the first fixed cell. |
-| `columns`     | Table columns. |
-| `rows`        | Table rows. |
-| `blank`       | Alternative content when `showTable` is `false`. |
+## 🔄 Features
 
----
+1. **Column Pinning**
+   - Pin/unpin columns using header context menu
+   - First column can be pinned by default
 
-## 🛠️ **Development & Contributions**
+2. **Sorting**
+   - Click headers to sort columns
+   - Supports text and number sorting
+   - Handles null/empty values
 
-If you want to contribute to this project, follow these steps:
+3. **Virtual Scrolling**
+   - Efficient rendering of large datasets
+   - Maintains smooth scrolling performance
 
-```sh
+4. **Responsive Design**
+   - Adapts to container width
+   - Horizontal scrolling for overflow
+
+## 🛠️ Development
+
+```bash
+# Clone repository
 git clone https://github.com/Jorgehn1995/lerniz-table.git
-cd lerniz-table
-pnpm install
-pnpm build
-```
 
-To test changes locally:
-```sh
+# Install dependencies
+pnpm install
+
+# Build component
+pnpm build
+
+# Test locally
 pnpm link
 ```
-Then, in your project where you want to test the component:
-```sh
-pnpm link lerniz-table
-```
 
----
+## 📄 License
 
-## 📦 **Publishing to NPM** (For Maintainers)
-If you need to publish a new version:
-```sh
-pnpm version patch
-pnpm publish --access public
-```
-
----
-
-## 📄 **License**
-
-This project is licensed under the **MIT** license.
-
-📌 **Developed by Jorge Hernández.**
-
+MIT Jorge Hernández

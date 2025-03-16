@@ -19,8 +19,6 @@ export interface Header {
   suffix?: string; //ya
   options?: Option[];
   optionsMap?: Record<string, string>; //ya
-  searchable?: boolean;
-  onChange?: (newValue: any) => void;
 }
 
 export type TableItem = Record<string, string | number | null>;
