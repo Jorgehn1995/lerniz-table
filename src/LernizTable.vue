@@ -621,9 +621,11 @@ const toggleDarkMode = () => {
 
         <!-- Info de scroll -->
         <div class="scroll-info">
-          Visible Items {{ visibleItems.length }} | Scroll vertical:
-          {{ scrollY }} px | Scroll horizontal: {{ scrollX }} px | Row hover:
-          {{ hoveredRowIndex }}
+          <div v-if="false">
+            Visible Items {{ visibleItems.length }} | Scroll vertical:
+            {{ scrollY }} px | Scroll horizontal: {{ scrollX }} px | Row hover:
+            {{ hoveredRowIndex }}
+          </div>
         </div>
       </div>
     </div>
