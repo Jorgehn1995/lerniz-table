@@ -109,6 +109,10 @@ const makeChange = (e: any) => {
   z-index: 1;
   position: relative;
 }
+input::selection {
+  background-color: rgb(var(--theme-primary),0.7);
+  color: white;
+}
 
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {

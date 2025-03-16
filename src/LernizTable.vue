@@ -21,6 +21,7 @@ export interface LernizTableProps<
   items: T[];
   headers: Header[];
   editCells?: boolean;
+  height?: number;
 }
 
 const emit = defineEmits(["change"]);
@@ -502,7 +503,12 @@ const toggleDarkMode = () => {
         </div>
       </div>
       <div class="layout">
-        <div class="main" ref="mainRef" tabindex="0">
+        <div
+          class="main"
+          ref="mainRef"
+          tabindex="0"
+          :style="{ height: (height ?? 400) + 'px' }"
+        >
           <div
             class="pinned-left fit"
             :style="{
@@ -724,7 +730,7 @@ const toggleDarkMode = () => {
 
 .component-container {
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-  padding: 1rem;
+  padding: 0;
   background: var(--component-bg);
   color: var(--text-color);
   transition: background 0.3s ease, color 0.3s ease;
@@ -780,11 +786,9 @@ const toggleDarkMode = () => {
   overflow-y: auto;
   background: var(--cell-bg);
   outline: none;
-  height: 400px;
 }
 
 .pinned-left {
-  
   z-index: 1;
   box-shadow: 0px 0 10px rgba(var(--theme-muted), 0.06);
 }

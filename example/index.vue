@@ -7,7 +7,7 @@ const makeChange = ({ item, header }) => {
 </script>
 
 <template>
-  <LernizTable :items="items" :headers="headers" edit-cells @change="makeChange">
+  <LernizTable :items="items" :headers="headers" edit-cells @change="makeChange" :height="300">
     <template #custom-menu-items="{ header }">
       <div class="sort-menu-item">
         <span class="sort-icon">📌</span>
