@@ -466,7 +466,7 @@ const toggleDarkMode = () => {
           :style="{
             width: pinnedLeftWidth + 'px',
             minWidth: pinnedLeftWidth + 'px',
-            height: itemHeight * 1.78 + 'px',
+            height: itemHeight * 1.77 + 'px',
           }"
         >
           <div class="row" :style="{ height: itemHeight * 1.5 + 'px' }">
@@ -483,7 +483,7 @@ const toggleDarkMode = () => {
             />
           </div>
         </div>
-        <div class="viewport" ref="viewportHeaderRef" :style="{ height: itemHeight * 1.78 + 'px' }">
+        <div class="viewport" ref="viewportHeaderRef" :style="{ height: itemHeight * 1.77 + 'px' }">
           <div class="row" :style="{ height: itemHeight * 1.5 + 'px' }">
             <TableHeader
               v-for="(header, colIndex) in viewportHeaders"

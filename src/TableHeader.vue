@@ -42,7 +42,7 @@ const emit = defineEmits(["header-click"]);
   width: 200px; /* Ajusta el ancho del contenedor */
 }
 .cell {
-  height: v-bind((itemHeight * 2) + "px");
+  height: 100%;
   padding: 0 0.8rem;
   display: flex;
   align-items: center;
@@ -66,7 +66,7 @@ const emit = defineEmits(["header-click"]);
   color: var(--header-text) !important;
   font-weight: 600;
   text-transform: uppercase;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   letter-spacing: 0.5px;
 }
 
