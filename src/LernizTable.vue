@@ -25,7 +25,7 @@ export interface LernizTableProps<
   footer?: boolean;
 }
 
-const emit = defineEmits(["change"]);
+const emit = defineEmits(["change", "delete", "edit"]);
 
 const props = defineProps<LernizTableProps<T>>();
 const itemHeight = 35;
@@ -36,13 +36,19 @@ const selectedCol = ref(-1);
 const isDarkMode = ref(false);
 const errorMessages = ref<Record<string, Record<string, string>>>({});
 
+// Context menu
+const contextMenuItem = ref({});
+const contextMenuVisible = ref(false);
+const contextMenuPosition = ref({ x: 0, y: 0 });
+const contextMenuRowIndex = ref(-1);
+
 const firstError = computed(() => {
   for (const section in errorMessages.value) {
     for (const field in errorMessages.value[section]) {
-      return errorMessages.value[section][field]; // Retorna el primer mensaje de error encontrado
+      return errorMessages.value[section][field];
     }
   }
-  return false; // Si no hay errores, retorna null
+  return false;
 });
 
 // Sorting state
@@ -54,7 +60,7 @@ const activeHeader = ref<Header | null>(null);
 
 const bgHeight = computed(() => `${props.items.length * itemHeight}px`);
 
-const headers = ref<Header[]>([]); // Usar props directamente
+const headers = ref<Header[]>([]);
 const pinnedHeaders = computed(() => headers.value.filter((h) => h.isPinned));
 const viewportHeaders = computed(() =>
   headers.value.filter((h) => !h.isPinned)
@@ -151,7 +157,6 @@ const endIndex = computed(() =>
   )
 );
 
-// Computed sorted items
 const sortedItems = computed(() => {
   if (!sortField.value || !sortDirection.value) return props.items;
 
@@ -163,7 +168,6 @@ const sortedItems = computed(() => {
     const aVal = field in a ? a[field] : null;
     const bVal = field in b ? b[field] : null;
 
-    // Handle null/empty values
     const aStr =
       aVal === null || aVal === undefined || aVal === "" ? " " : String(aVal);
     const bStr =
@@ -177,7 +181,6 @@ const sortedItems = computed(() => {
             Number(aVal === null || aVal === undefined ? 0 : aVal);
     }
 
-    // Default to text comparison
     return sortDirection.value === "asc"
       ? aStr.localeCompare(bStr)
       : bStr.localeCompare(aStr);
@@ -188,27 +191,22 @@ const visibleItems = computed(() =>
   sortedItems.value.slice(startIndex.value, endIndex.value)
 );
 
-// Sort menu handling
 function handleHeaderClick(event: MouseEvent, header: Header) {
-  event.stopPropagation(); // Prevent event from bubbling to document
+  event.stopPropagation();
   const headerElement = event.target as HTMLElement;
   const rect = headerElement.getBoundingClientRect();
   const windowWidth = window.innerWidth;
 
-  // Calculate menu position
   let x = rect.left;
   const y = rect.bottom;
 
-  // Get menu width (or use default if not yet rendered)
-  const menuWidth = 200; // Default min-width from CSS
+  const menuWidth = 200;
 
-  // Adjust x position if menu would overflow window
   if (x + menuWidth > windowWidth) {
-    x = windowWidth - menuWidth - 10; // 10px padding from window edge
+    x = windowWidth - menuWidth - 10;
   }
 
-  // Ensure x is never negative
-  x = Math.max(10, x); // At least 10px from left edge
+  x = Math.max(10, x);
 
   sortMenuPosition.value = { x, y };
   activeHeader.value = header;
@@ -218,7 +216,7 @@ function handleHeaderClick(event: MouseEvent, header: Header) {
 function handleSort(direction: "asc" | "desc") {
   sortDirection.value = direction;
   sortField.value = activeHeader.value?.field || null;
-  showSortMenu.value = false; // Close menu after selection
+  showSortMenu.value = false;
 }
 
 function handleDocumentClick(event: MouseEvent) {
@@ -230,7 +228,6 @@ function handleDocumentClick(event: MouseEvent) {
 
 function ensureCellVisible(row: number, col: number) {
   nextTick(() => {
-    // <-- Agregar nextTick aquí
     const rowTop = row * itemHeight;
     const rowBottom = (row + 1) * itemHeight;
     const currentScrollY = scrollY.value;
@@ -248,7 +245,6 @@ function ensureCellVisible(row: number, col: number) {
       mainRef.value?.scrollTo({ top: newScrollY, behavior: "smooth" });
     }
 
-    // Scroll horizontal (código existente)
     if (col === 0) return;
     const totalPinned = pinnedHeaders.value.length;
     if (col <= totalPinned) return;
@@ -286,7 +282,7 @@ function ensureCellVisible(row: number, col: number) {
 function handleCellClick(rowIndex: number, colIndex: number) {
   selectedRow.value = rowIndex;
   selectedCol.value = colIndex;
-  ensureCellVisible(rowIndex, colIndex); // Añade esta línea
+  ensureCellVisible(rowIndex, colIndex);
   focusInput();
 }
 
@@ -301,22 +297,18 @@ function handleKeyDown(event: KeyboardEvent) {
     case "ArrowUp":
       event.preventDefault();
       newRow = Math.max(0, newRow - 1);
-
       break;
     case "ArrowDown":
       event.preventDefault();
       newRow = Math.min(sortedItems.value.length - 1, newRow + 1);
-
       break;
     case "ArrowLeft":
       event.preventDefault();
       newCol = newCol - 1 === 0 ? 1 : Math.max(0, newCol - 1);
-
       break;
     case "ArrowRight":
       event.preventDefault();
       newCol = Math.min(totalCols - 1, newCol + 1);
-
       break;
     case "Enter":
       event.preventDefault();
@@ -404,8 +396,48 @@ function setHeader() {
   });
 }
 
+// Context menu handlers
+function handleRowContextMenu(event: MouseEvent, rowIndex: number, item: any) {
+  event.preventDefault();
+  contextMenuItem.value = item;
+  contextMenuRowIndex.value = rowIndex;
+  contextMenuPosition.value = { x: event.clientX, y: event.clientY };
+  contextMenuVisible.value = true;
+}
+
+
+
+function handleClickOutside(event: MouseEvent) {
+  const target = event.target as HTMLElement;
+
+  // Cerrar menú de contexto
+  const contextMenu = document.querySelector(".context-menu");
+  const isClickInsideContextMenu = contextMenu?.contains(target);
+  const isClickOnRow = target.closest(".row");
+
+  if (!isClickInsideContextMenu && !isClickOnRow) {
+    contextMenuVisible.value = false;
+  }
+
+  // Lógica existente para menú de ordenación
+  if (
+    event.target === document.documentElement ||
+    event.target === document.body
+  ) {
+    showSortMenu.value = false;
+    return;
+  }
+
+  const menu = document.querySelector(".sort-menu");
+  const isClickInsideMenu = menu?.contains(target);
+  const isClickOnHeader = target.closest(".header-cell");
+
+  if (!isClickInsideMenu && !isClickOnHeader) {
+    showSortMenu.value = false;
+  }
+}
+
 onMounted(() => {
-  //headers.value = props.headers;
   setHeader();
 
   if (mainRef.value) {
@@ -427,7 +459,7 @@ onMounted(() => {
     },
     true
   );
-  window.addEventListener("keydown", handleKeyDown); // <-- Agregar esto
+  window.addEventListener("keydown", handleKeyDown);
 });
 
 onUnmounted(() => {
@@ -440,29 +472,8 @@ onUnmounted(() => {
     },
     true
   );
-  window.removeEventListener("keydown", handleKeyDown); // <-- Agregar esto
+  window.removeEventListener("keydown", handleKeyDown);
 });
-
-function handleClickOutside(event: MouseEvent) {
-  const target = event.target as HTMLElement;
-
-  // Close if click was on scrollbar
-  if (
-    event.target === document.documentElement ||
-    event.target === document.body
-  ) {
-    showSortMenu.value = false;
-    return;
-  }
-
-  const menu = document.querySelector(".sort-menu");
-  const isClickInsideMenu = menu?.contains(target);
-  const isClickOnHeader = target.closest(".header-cell");
-
-  if (!isClickInsideMenu && !isClickOnHeader) {
-    showSortMenu.value = false;
-  }
-}
 
 function addError(id: string, field: string, message: string, row: number) {
   if (!errorMessages.value[id]) {
@@ -556,6 +567,9 @@ const toggleDarkMode = () => {
                 :key="rowIndex"
                 @mouseenter="hoveredRowIndex = startIndex + rowIndex"
                 @mouseleave="hoveredRowIndex = -1"
+                @contextmenu.prevent="
+                  handleRowContextMenu($event, startIndex + rowIndex, item)
+                "
                 :class="{ hovered: hoveredRowIndex === startIndex + rowIndex }"
               >
                 <div class="firstColumn data-cell text-center">
@@ -599,7 +613,6 @@ const toggleDarkMode = () => {
             </div>
           </div>
 
-          <!-- Scrollable columns -->
           <div class="viewport" :style="{ height: bgHeight }" ref="viewportRef">
             <div
               :style="{
@@ -614,6 +627,9 @@ const toggleDarkMode = () => {
                 :key="rowIndex"
                 @mouseenter="hoveredRowIndex = startIndex + rowIndex"
                 @mouseleave="hoveredRowIndex = -1"
+                @contextmenu.prevent="
+                  handleRowContextMenu($event, startIndex + rowIndex, item)
+                "
                 :class="{ hovered: hoveredRowIndex === startIndex + rowIndex }"
               >
                 <TableCell
@@ -663,7 +679,6 @@ const toggleDarkMode = () => {
           </div>
         </div>
 
-        <!-- Info de scroll -->
         <div class="scroll-info" v-if="footer ?? true">
           <div v-if="firstError" class="error-message">
             {{ firstError }}
@@ -722,12 +737,31 @@ const toggleDarkMode = () => {
       </div>
       <slot name="custom-menu-items" :header="activeHeader"></slot>
     </div>
+
+    <!-- Context Menu -->
+    <div
+      v-if="contextMenuVisible"
+      class="context-menu"
+      :style="{
+        position: 'fixed',
+        left: contextMenuPosition.x + 'px',
+        top: contextMenuPosition.y + 'px',
+      }"
+    >
+    
+      <slot
+        name="context-menu-items"
+        :row="sortedItems[contextMenuRowIndex]"
+        
+      ></slot>
+    </div>
   </div>
 </template>
+
 <style>
 .disabled {
-  opacity: 0.5; /* Da un efecto visual de deshabilitado */
-  cursor: not-allowed; /* Cambia el cursor para indicar que no se puede hacer clic */
+  opacity: 0.5;
+  cursor: not-allowed;
   pointer-events: none;
 }
 
@@ -748,10 +782,32 @@ const toggleDarkMode = () => {
   gap: 8px;
   transition: background-color 0.2s;
 }
+
+.context-menu {
+  position: fixed;
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 8px 0;
+  min-width: 150px;
+  max-width: 200px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+}
+
+.context-menu-item {
+  font-size: 0.8rem;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.context-menu-item:hover {
+  background-color: rgba(var(--theme-muted), 0.05);
+}
 </style>
 
 <style scoped>
-
 .text-center {
   text-align: center;
 }
@@ -781,11 +837,11 @@ const toggleDarkMode = () => {
   --scroll-info-text: rgb(var(--theme-muted));
 }
 
-.error-message{
+.error-message {
   border-radius: 4px;
   padding: 4px;
-  color: rgb(var(--theme-error),1);
-  background-color: rgb(var(--theme-error),0.1);
+  color: rgb(var(--theme-error), 1);
+  background-color: rgb(var(--theme-error), 0.1);
 }
 
 .component-container {
@@ -860,7 +916,7 @@ const toggleDarkMode = () => {
   overflow-y: hidden;
 }
 .main .viewport::-webkit-scrollbar {
-  display: none; /* Chrome, Safari y Opera */
+  display: none;
 }
 
 .scroll-info {
@@ -882,7 +938,7 @@ const toggleDarkMode = () => {
   max-width: 200px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   z-index: 1000;
-  margin-top: 2px; /* Small gap between header and menu */
+  margin-top: 2px;
 }
 
 .sort-menu-item:hover {
@@ -903,7 +959,7 @@ const toggleDarkMode = () => {
 
 @media screen and (max-width: 768px) {
   .sort-menu {
-    max-width: calc(100vw - 20px); /* 10px padding on each side */
+    max-width: calc(100vw - 20px);
   }
 }
 

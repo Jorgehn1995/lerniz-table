@@ -14,6 +14,9 @@ const makeChange = ({ item, header }) => {
         {{ header.text }}
       </div>
     </template>
+    <template v-slot:name="{item}">
+      asdfasd
+    </template>
   </LernizTable>
 </template>
 <style>
