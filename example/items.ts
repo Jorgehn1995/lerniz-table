@@ -1,6 +1,7 @@
 import type { Header } from "../src/types";
 const items = [
   {
+    id:1,
     name: "Ejemplo a",
     a: 1,
     b: null,
@@ -25,6 +26,7 @@ const items = [
     u: null,
   },
   {
+    id:2,
     name: "Ejemplo b",
     a: 2,
     b: null,
@@ -49,6 +51,7 @@ const items = [
     u: null,
   },
   {
+    id:3,
     name: "Ejemplo c",
     a: 3,
     b: null,
@@ -73,6 +76,7 @@ const items = [
     u: null,
   },
   {
+    id:4,
     name: "Ejemplo",
     a: null,
     b: null,
@@ -97,6 +101,7 @@ const items = [
     u: null,
   },
   {
+    id:5,
     name: "Ejemplo",
     a: null,
     b: null,
@@ -121,6 +126,7 @@ const items = [
     u: null,
   },
   {
+    id:6,
     name: "Ejemplo",
     a: null,
     b: null,
@@ -153,8 +159,7 @@ const headers: Header[] = [
     width: 200,
     type: "text",
     readonly: false,
-    sortable: false,
-    pinneable: false,
+    pinneable: true,
     rules: [
       (v) => !!v || "Email es requerido",
       (v) => /.+@.+\..+/.test(v) || "Email inválido",

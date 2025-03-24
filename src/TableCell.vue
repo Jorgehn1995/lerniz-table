@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { nextTick, ref } from "vue";
-import { Header } from "./types";
+import { nextTick, ref, computed } from "vue";
+import type { Header } from "./types";
 
 const props = defineProps<{
   itemHeight: number;
@@ -10,23 +10,86 @@ const props = defineProps<{
   isEdit: boolean;
 }>();
 
-const emit = defineEmits(["cell-click", "cell-dblclick", "cell-change"]);
+const emit = defineEmits([
+  "cell-click",
+  "cell-dblclick",
+  "cell-change",
+  "cell-valid",
+  "cell-invalid",
+]);
+
 const cellRef = ref<HTMLElement | null>(null);
+const isValidField = ref(true);
+
+// Computed properties optimizadas
+const headerType = computed(() => props.header.type ?? "text");
+const headerField = computed(() => props.header.field);
+const headerAlign = computed(() => `cell-${props.header.align ?? "left"}`);
+const isTextInput = computed(() =>
+  ["text", "date", "number"].includes(headerType.value)
+);
+const isSelect = computed(() => headerType.value === "select");
+
+// Reglas de validación memoizadas
+const currentRules = computed(() => props.header.rules || []);
 
 const validateInput = (field: string) => {
   const currentValue = props.item[field];
+
+  for (let i = 0; i < currentRules.value.length; i++) {
+    const result = currentRules.value[i](currentValue);
+    if (typeof result === "string") {
+      if (isValidField.value) {
+        isValidField.value = false;
+        emit("cell-invalid", {
+          id: props.item.id,
+          field: headerField.value,
+          message: result,
+        });
+      }
+      return;
+    }
+  }
+
+  if (!isValidField.value) {
+    isValidField.value = true;
+    emit("cell-valid", {
+      id: props.item.id,
+      field: headerField.value,
+      message: "",
+    });
+  }
 };
 
-const makeChange = (e: any) => {
+const makeChange = () => {
   emit("cell-change");
-  const cell = cellRef.value;
-  if (cell) {
-    console.log("sucio");
-    nextTick(() => {
-      // Agregar atributo data-dirty en lugar de clase
-      cell.setAttribute("data-dirty", "true");
-      console.log(cell);
-    });
+  requestAnimationFrame(() => {
+    cellRef.value?.setAttribute("data-dirty", "true");
+  });
+};
+
+// Handlers de eventos tipados
+const handleInput = (e: Event) => {
+  const target = e.target as HTMLInputElement;
+  if (target) {
+    props.item[headerField.value] = target.value;
+    validateInput(headerField.value);
+  }
+};
+
+const handleSelect = (e: Event) => {
+  const target = e.target as HTMLSelectElement;
+  if (target) {
+    props.item[headerField.value] = target.value;
+    makeChange();
+  }
+};
+
+const handleCheckbox = (e: Event) => {
+  const target = e.target as HTMLInputElement;
+  if (target) {
+    props.item[headerField.value] = target.checked;
+    makeChange();
   }
 };
 </script>
@@ -36,36 +99,36 @@ const makeChange = (e: any) => {
     ref="cellRef"
     class="cell data-cell"
     :style="{
-      width: header.width + 'px',
-      minWidth: header.width + 'px',
+      width: `${header.width}px`,
+      minWidth: `${header.width}px`,
     }"
     @click="emit('cell-click')"
     @dblclick="emit('cell-dblclick')"
-    :class="{ selected: isSelected }"
+    :class="{ selected: isSelected, 'cell-error': !isValidField }"
   >
-    <span class="prefix">
-      {{ header.prefix }}
-    </span>
-    <div v-if="isEdit && isSelected" class="cell-input-container">
+    <span v-if="header.prefix" class="prefix">{{ header.prefix }}</span>
+
+    <template v-if="isEdit && isSelected">
       <input
-        v-if="['text', 'date', 'number'].includes(header.type ?? 'text')"
-        ref="activeInput"
-        :readonly="header.readonly ?? false"
-        :class="`cell-input cell-${header.align ?? 'left'}`"
-        :type="header.type ?? 'text'"
-        v-model="item[header.field]"
+        v-if="isTextInput"
+        :key="headerType"
+        :readonly="header.readonly"
+        :class="['cell-input', headerAlign]"
+        :type="headerType"
+        :value="item[headerField]"
+        @input="handleInput"
         @change="makeChange"
       />
       <select
-        v-else-if="header.type === 'select'"
-        ref="activeInput"
-        class="cell-input cell-input-select"
-        v-model="item[header.field]"
-        @change="makeChange"
+        v-else-if="isSelect"
+        :key="headerType"
+        :value="item[headerField]"
+        :class="['cell-input', headerAlign]"
+        @change="handleSelect"
       >
         <option
-          v-for="(option, i) in header.options"
-          :key="i"
+          v-for="option in header.options"
+          :key="option.value"
           :value="option.value"
           class="cell-option"
         >
@@ -74,45 +137,43 @@ const makeChange = (e: any) => {
       </select>
       <input
         v-else
-        @change="makeChange"
-        ref="activeInput"
         type="checkbox"
-        :readonly="header.readonly ?? false"
-        class="cell-input cell-input-checkbox"
-        v-model="item[header.field]"
+        :checked="item[headerField]"
+        :class="headerAlign"
+        class="cell-input-checkbox"
+        @change="handleCheckbox"
       />
+    </template>
+
+    <div v-else :class="['cell-text', headerAlign]">
+      <template v-if="isSelect">
+        {{ header.optionsMap?.[item[headerField]] ?? "-" }}
+      </template>
+      <template v-else-if="headerType === 'checkbox'">
+        <span class="checkbox-text">{{ item[headerField] ? "✔" : "" }}</span>
+      </template>
+      <template v-else>
+        {{ item[headerField] }}
+      </template>
     </div>
-    <div v-else :class="`cell-text cell-${header.align ?? 'left'}`">
-      <span v-if="['text', 'date', 'number'].includes(header.type ?? 'text')">
-        {{ item[header.field] }}
-      </span>
-      <span v-else-if="header.type === 'select'">
-        {{ header.optionsMap?.[item[header.field] ?? ""] ?? "-" }}
-      </span>
-      <span v-else class="checkbox-text">
-        {{ item[header.field] ? "✔" : "" }}
-      </span>
-    </div>
-    <div class="suffix">
+
+    <div v-if="header.suffix" class="suffix">
       {{ header.suffix }}
     </div>
   </div>
 </template>
+
 <style scoped>
+/* Estilos originales optimizados */
 .checkbox-text {
   color: var(--text-color);
 }
+
 .prefix,
 .suffix {
   opacity: 0.7;
 }
-.selected {
-  background: rgba(var(--theme-primary), 0.15) !important;
-  outline: 2px solid rgb(var(--theme-primary));
-  outline-offset: -2px;
-  z-index: 1;
-  position: relative;
-}
+
 input::selection {
   background-color: rgb(var(--theme-primary), 0.7);
   color: white;
@@ -140,59 +201,41 @@ input[type="number"]::-webkit-outer-spin-button {
   text-overflow: ellipsis;
   cursor: pointer;
   transition: background 0.3s ease, color 0.3s ease;
+  position: relative;
+}
+
+.selected {
+  background: rgba(var(--theme-primary), 0.15) !important;
+  outline: 2px solid rgb(var(--theme-primary));
+  outline-offset: -2px;
+  z-index: 1;
+  position: relative;
+}
+
+.cell-error {
+  background: rgb(var(--theme-error), 0.2) !important;
 }
 
 .cell-input-container {
   width: 100%;
-}
-
-/* Estilo para cuando el option está seleccionado o en hover */
-.cell-option:checked,
-.cell-option:hover {
-  background-color: rgba(
-    0,
-    0,
-    0,
-    0.1
-  ); /* Fondo ligeramente oscuro al seleccionar o pasar el mouse */
-  color: rgb(
-    var(--theme-muted),
-    0.8
-  ); /* Cambia el color del texto para mejorar el contraste */
-}
-
-/* Estilo para el foco (accesibilidad) */
-.cell-option:focus {
-  background-color: rgba(
-    var(--theme-muted),
-    0.05
-  ); /* Fondo más claro al enfocar */
-  color: rgba(
-    var(--theme-muted),
-    1
-  ); /* Texto más oscuro para mejor legibilidad */
+  position: relative;
 }
 
 .cell-center {
   text-align: center;
-  justify-content: center; /* Centra horizontalmente el contenido */
+  justify-content: center;
 }
 
 .cell-left {
   text-align: left;
-  justify-content: flex-start; /* Asegura alineación a la izquierda */
+  justify-content: flex-start;
 }
 
 .cell-right {
   text-align: right;
-  justify-content: flex-end; /* Asegura alineación a la derecha */
+  justify-content: flex-end;
 }
 
-.cell-input-number::-webkit-inner-spin-button,
-.cell-input-number::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
 .cell-text,
 .cell-input {
   width: 100%;
@@ -203,28 +246,30 @@ input[type="number"]::-webkit-outer-spin-button {
   font: inherit;
   font-size: inherit;
   color: inherit;
-  display: flex; /* Asegura que ambos elementos se comporten igual */
-  align-items: center; /* Centra verticalmente el contenido */
+  display: flex;
+  align-items: center;
   line-height: 1;
   vertical-align: middle;
 }
+
 .cell-input-checkbox {
   accent-color: rgb(var(--theme-primary));
 }
+
 .cell-option {
   width: 100%;
-  font: inherit; /* Hereda la fuente del contenedor */
-  font-size: inherit; /* Hereda el tamaño de la fuente */
-  color: inherit; /* Hereda el color del texto */
-  background-color: transparent; /* Fondo transparente */
-  padding: 8px 12px; /* Espaciado interno para mejor legibilidad */
-  border: none; /* Sin bordes */
-  outline: none; /* Sin contorno al enfocar */
-  appearance: none; /* Elimina el estilo por defecto del navegador */
-  -webkit-appearance: none; /* Para compatibilidad con Safari */
-  -moz-appearance: none; /* Para compatibilidad con Firefox */
-  cursor: pointer; /* Cambia el cursor a pointer para indicar que es clickeable */
-  transition: background-color 0.2s ease, color 0.2s ease; /* Transición suave */
+  font: inherit;
+  font-size: inherit;
+  color: inherit;
+  background-color: transparent;
+  padding: 8px 12px;
+  border: none;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 [data-dirty="true"] {

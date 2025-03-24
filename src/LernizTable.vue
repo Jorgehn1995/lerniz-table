@@ -22,7 +22,7 @@ export interface LernizTableProps<
   headers: Header[];
   editCells?: boolean;
   height?: number;
-  footer?:boolean;
+  footer?: boolean;
 }
 
 const emit = defineEmits(["change"]);
@@ -34,6 +34,16 @@ const hoveredRowIndex = ref(-1);
 const selectedRow = ref(-1);
 const selectedCol = ref(-1);
 const isDarkMode = ref(false);
+const errorMessages = ref<Record<string, Record<string, string>>>({});
+
+const firstError = computed(() => {
+  for (const section in errorMessages.value) {
+    for (const field in errorMessages.value[section]) {
+      return errorMessages.value[section][field]; // Retorna el primer mensaje de error encontrado
+    }
+  }
+  return false; // Si no hay errores, retorna null
+});
 
 // Sorting state
 const sortField = ref<string | null>(null);
@@ -454,6 +464,21 @@ function handleClickOutside(event: MouseEvent) {
   }
 }
 
+function addError(id: string, field: string, message: string, row: number) {
+  if (!errorMessages.value[id]) {
+    errorMessages.value[id] = {};
+  }
+  errorMessages.value[id][field] = `Fila ${row + 1} - ${message}`;
+}
+function removeError(id: string, field: string) {
+  if (errorMessages.value[id]) {
+    delete errorMessages.value[id][field];
+    if (Object.keys(errorMessages.value[id]).length === 0) {
+      delete errorMessages.value[id];
+    }
+  }
+}
+
 const toggleDarkMode = () => {
   isDarkMode.value = !isDarkMode.value;
 };
@@ -560,6 +585,15 @@ const toggleDarkMode = () => {
                       item,
                     })
                   "
+                  @cell-invalid="
+                    addError(
+                      $event.id,
+                      $event.field,
+                      $event.message,
+                      startIndex + rowIndex
+                    )
+                  "
+                  @cell-valid="removeError($event.id, $event.field)"
                 />
               </div>
             </div>
@@ -614,6 +648,15 @@ const toggleDarkMode = () => {
                       item,
                     })
                   "
+                  @cell-invalid="
+                    addError(
+                      $event.id,
+                      $event.field,
+                      $event.message,
+                      startIndex + rowIndex
+                    )
+                  "
+                  @cell-valid="removeError($event.id, $event.field)"
                 />
               </div>
             </div>
@@ -621,7 +664,11 @@ const toggleDarkMode = () => {
         </div>
 
         <!-- Info de scroll -->
-        <div class="scroll-info" v-if="footer??true">
+        <div class="scroll-info" v-if="footer ?? true">
+          <div v-if="firstError" class="error-message">
+            {{ firstError }}
+          </div>
+          <div v-else>{{ items.length }} registros</div>
           <div v-if="false">
             Visible Items {{ visibleItems.length }} | Scroll vertical:
             {{ scrollY }} px | Scroll horizontal: {{ scrollX }} px | Row hover:
@@ -704,6 +751,7 @@ const toggleDarkMode = () => {
 </style>
 
 <style scoped>
+
 .text-center {
   text-align: center;
 }
@@ -712,7 +760,9 @@ const toggleDarkMode = () => {
   --theme-secondary: 94, 227, 242;
   --theme-muted: 0, 0, 0;
   --theme-bg: 255, 255, 255;
+  --theme-error: 247, 0, 0;
 
+  --error-color: rgb(var(--theme-error), 0.4);
   --selected-bg: rgb(var(--theme-primary));
 
   --header-bg: rgb(var(--theme-muted), 0.03);
@@ -729,6 +779,13 @@ const toggleDarkMode = () => {
 
   --scroll-info-bg: rgb(var(--theme-bg));
   --scroll-info-text: rgb(var(--theme-muted));
+}
+
+.error-message{
+  border-radius: 4px;
+  padding: 4px;
+  color: rgb(var(--theme-error),1);
+  background-color: rgb(var(--theme-error),0.1);
 }
 
 .component-container {
@@ -801,7 +858,6 @@ const toggleDarkMode = () => {
   overflow-x: auto;
   position: relative;
   overflow-y: hidden;
-
 }
 .main .viewport::-webkit-scrollbar {
   display: none; /* Chrome, Safari y Opera */
