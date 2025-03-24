@@ -1,164 +1,168 @@
-# Lerniz Table
+# LernizTable Component
 
-![Lerniz Table](https://img.shields.io/npm/v/lerniz-table.svg?style=flat-square)
+A feature-rich, performant Vue 3 table component with sorting, column pinning, cell editing, and virtual scrolling capabilities.
 
-A Vue 3 table component that provides Excel-like functionality with fixed headers and columns. Features keyboard navigation, sorting, and customizable slots.
+## Features
 
-## 📦 Installation
+- **Column Sorting**: Click headers for ascending/descending sorting
+- **Column Pinning**: Pin columns to the left for horizontal scrolling
+- **Cell Editing**: Inline editing for cell content (text/number/select)
+- **Virtual Scrolling**: Optimized performance for large datasets
+- **Keyboard Navigation**: Arrow keys + Enter for cell navigation
+- **Dark Mode Support**: Toggleable dark theme
+- **Validation System**: Integrated error handling with visual feedback
+- **Customizable Styling**: CSS variables for theme customization
+- **Responsive Design**: Adapts to different screen sizes
+
+## Installation
 
 ```bash
-# Using pnpm (recommended)
-pnpm add lerniz-table
-
-# Using npm
 npm install lerniz-table
-
-# Using yarn
-yarn add lerniz-table
 ```
 
-## 🔧 Component Props
-
-```typescript
-interface LernizTableProps<T extends Record<string, string | number | null>> {
-  // Required Props
-  items: T[]          // Array of data items to display
-  headers: Header[]   // Array of column definitions
-  
-  // Optional Props
-  editCells?: boolean // Enable cell editing (default: false)
-  height?: number     // Fixed viewport height (default: auto)
-  footer?: boolean    // Show footer row (default: false)
-}
-```
-
-## 📋 Header Structure
-
-Headers must follow this structure:
-
-```typescript
-interface Header {
-  field: string      // Property name from data items
-  label: string      // Display text for column
-  width?: number     // Column width in pixels
-  type?: 'text' | 'number'  // Data type for sorting
-  isPinned?: boolean // Pin column to left side
-}
-```
-
-### Example Header Configuration:
-
-```javascript
-const headers = [
-  {
-    field: 'id',
-    label: 'ID',
-    width: 80,
-    type: 'number',
-    isPinned: true
-  },
-  {
-    field: 'name',
-    label: 'Name',
-    width: 200,
-    type: 'text'
-  }
-]
-```
-
-## 🎯 Usage Example
+## Basic Usage
 
 ```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import LernizTable from './components/LernizTable.vue'
+
+const headers = ref([
+  { title: 'ID', field: 'id', type: 'number', width: 80, isPinned: true },
+  { title: 'Name', field: 'name', type: 'text', sortable: true },
+  { title: 'Status', field: 'status', type: 'select', options: [
+    { value: 1, text: 'Active' },
+    { value: 2, text: 'Inactive' }
+  ]}
+])
+
+const items = ref([
+  { id: 1, name: 'Item 1', status: 1 },
+  { id: 2, name: 'Item 2', status: 2 }
+])
+
+function handleChange(update: { header: Header, item: any }) {
+  console.log('Cell updated:', update)
+}
+</script>
+
 <template>
   <LernizTable
     :items="items"
     :headers="headers"
-    :editCells="true"
-    :height="400"
-  >
-    <!-- Custom Menu Items Slot -->
-    <template #custom-menu-items="{ header }">
-      <button @click="handleHeaderAction(header)">
-        Custom Action
-      </button>
-    </template>
-  </LernizTable>
+    edit-cells
+    @change="handleChange"
+  />
 </template>
+```
+
+## Props
+
+| Prop       | Type                 | Default | Description                                      |
+|------------|----------------------|---------|--------------------------------------------------|
+| items      | `T[]`                | `[]`    | Array of data objects                           |
+| headers    | `Header[]`           | `[]`    | Column configuration (see Header structure)      |
+| editCells  | `boolean`            | `false` | Enable cell editing                              |
+| height     | `number`             | `400`   | Table height in pixels                          |
+| footer     | `boolean`            | `true`  | Show footer with row count/error messages        |
+
+## Header Structure
+
+```ts
+interface Header {
+  title: string         // Column display name
+  field: string         // Key in data objects
+  type: 'text'|'number'|'select'
+  width?: number        // Column width in pixels
+  isPinned?: boolean    // Whether column is pinned left
+  sortable?: boolean    // Allow sorting (default: true)
+  options?: {           // Required for 'select' type
+    value: string|number
+    text: string
+  }[]
+}
+```
+
+## Events
+
+```ts
+// Emitted when cell content changes
+@change="(update: { header: Header, item: T }) => void"
+```
+
+## Customization
+
+Override CSS variables in your parent component:
+
+```css
+.lerniz-table {
+  --theme-primary: 34, 19, 107;     /* RGB values */
+  --theme-secondary: 94, 227, 242;
+  --theme-error: 247, 0, 0;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --cell-text: #333;
+}
+```
+
+**Dark Mode:** Add `dark-mode` class to component container:
+```vue
+<LernizTable class="dark-mode" ... />
+```
+
+## Validation
+
+Example validation implementation:
+```vue
+<script setup>
+function validateEmail(row, value) {
+  if (!value.includes('@')) {
+    addError(row.id, 'email', 'Invalid email format', rowIndex)
+  } else {
+    removeError(row.id, 'email')
+  }
+}
+</script>
+
+<template>
+  <LernizTable @cell-change="({ item }) => validateEmail(item)" />
+</template>
+```
+
+## Keyboard Navigation
+
+- **Arrow keys**: Navigate between cells
+- **Enter**: Edit selected cell
+- **Tab**: Move to next cell
+- **Shift+Tab**: Move to previous cell
+
+## Methods
+
+Access via component ref:
+```vue
+<LernizTable ref="tableRef" />
 
 <script setup>
-const items = [
-  { id: 1, name: 'John Doe', age: 30 },
-  { id: 2, name: 'Jane Smith', age: 25 }
-]
+const tableRef = ref()
 
-const headers = [
-  { field: 'id', label: 'ID', width: 80, type: 'number' },
-  { field: 'name', label: 'Name', width: 200 },
-  { field: 'age', label: 'Age', width: 100, type: 'number' }
-]
+// Example methods:
+tableRef.value.togglePinLeft(header)
+tableRef.value.ensureCellVisible(row, col)
 </script>
 ```
 
-## 🎨 Available Slots
+## Styling
 
-| Slot Name | Parameters | Description |
-|-----------|------------|-------------|
-| `custom-menu-items` | `{ header: { col: number, element: HTMLElement } }` | Add custom menu items to column header context menu |
-| `toolbar-top` | - | Content above the table |
-| `toolbar-bottom` | - | Content below the table |
-| `first-cell` | - | Content for top-left fixed cell |
-| `columns` | - | Custom column header rendering |
-| `rows` | - | Custom row rendering |
-| `blank` | - | Content when table is hidden |
+CSS variables available for customization:
 
-## ⌨️ Keyboard Navigation
+| Variable               | Default                      | Description             |
+|------------------------|------------------------------|-------------------------|
+| --theme-primary        | `34, 19, 107` (RGB)          | Main theme color        |
+| --theme-secondary      | `94, 227, 242` (RGB)         | Secondary color         |
+| --theme-error          | `247, 0, 0` (RGB)            | Error highlight color   |
+| --border-color         | `rgba(0, 0, 0, 0.06)`        | Border color            |
+| --cell-text            | `rgba(0, 0, 0, 0.75)`        | Text color              |
+| --row-hover            | `rgba(0, 0, 0, 0.04)`        | Row hover background    |
 
-For Excel-like keyboard navigation, add `data-col` and `data-row` attributes to input elements:
+## License
 
-```vue
-<input 
-  type="text" 
-  :data-col="columnIndex"
-  :data-row="rowIndex"
-  v-model="value"
->
-```
-
-## 🔄 Features
-
-1. **Column Pinning**
-   - Pin/unpin columns using header context menu
-   - First column can be pinned by default
-
-2. **Sorting**
-   - Click headers to sort columns
-   - Supports text and number sorting
-   - Handles null/empty values
-
-3. **Virtual Scrolling**
-   - Efficient rendering of large datasets
-   - Maintains smooth scrolling performance
-
-4. **Responsive Design**
-   - Adapts to container width
-   - Horizontal scrolling for overflow
-
-## 🛠️ Development
-
-```bash
-# Clone repository
-git clone https://github.com/Jorgehn1995/lerniz-table.git
-
-# Install dependencies
-pnpm install
-
-# Build component
-pnpm build
-
-# Test locally
-pnpm link
-```
-
-## 📄 License
-
-MIT Jorge Hernández
+MIT License
