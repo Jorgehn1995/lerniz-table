@@ -2,7 +2,7 @@
 import { nextTick, ref } from "vue";
 import { Header } from "./types";
 
-defineProps<{
+const props = defineProps<{
   itemHeight: number;
   header: Header;
   item: any;
@@ -12,6 +12,10 @@ defineProps<{
 
 const emit = defineEmits(["cell-click", "cell-dblclick", "cell-change"]);
 const cellRef = ref<HTMLElement | null>(null);
+
+const validateInput = (field: string) => {
+  const currentValue = props.item[field];
+};
 
 const makeChange = (e: any) => {
   emit("cell-change");
@@ -110,7 +114,7 @@ const makeChange = (e: any) => {
   position: relative;
 }
 input::selection {
-  background-color: rgb(var(--theme-primary),0.7);
+  background-color: rgb(var(--theme-primary), 0.7);
   color: white;
 }
 
@@ -151,13 +155,22 @@ input[type="number"]::-webkit-outer-spin-button {
     0,
     0.1
   ); /* Fondo ligeramente oscuro al seleccionar o pasar el mouse */
-  color: rgb(var(--theme-muted),0.8); /* Cambia el color del texto para mejorar el contraste */
+  color: rgb(
+    var(--theme-muted),
+    0.8
+  ); /* Cambia el color del texto para mejorar el contraste */
 }
 
 /* Estilo para el foco (accesibilidad) */
 .cell-option:focus {
-  background-color: rgba(var(--theme-muted), 0.05); /* Fondo más claro al enfocar */
-  color: rgba(var(--theme-muted), 1);; /* Texto más oscuro para mejor legibilidad */
+  background-color: rgba(
+    var(--theme-muted),
+    0.05
+  ); /* Fondo más claro al enfocar */
+  color: rgba(
+    var(--theme-muted),
+    1
+  ); /* Texto más oscuro para mejor legibilidad */
 }
 
 .cell-center {
@@ -215,9 +228,7 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 [data-dirty="true"] {
-  
   background-color: rgb(var(--theme-primary), 0.01);
   box-shadow: inset 0 0 30px rgba(var(--theme-primary), 0.04);
 }
-
 </style>

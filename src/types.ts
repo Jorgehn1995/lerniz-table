@@ -19,6 +19,7 @@ export interface Header {
   suffix?: string; //ya
   options?: Option[];
   optionsMap?: Record<string, string>; //ya
+  rules?: ((value: any) => boolean | string)[];
 }
 
 export type TableItem = Record<string, string | number | null>;

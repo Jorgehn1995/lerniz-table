@@ -143,7 +143,7 @@ const items = [
     s: null,
     t: null,
     u: null,
-  }
+  },
 ];
 
 const headers: Header[] = [
@@ -152,9 +152,13 @@ const headers: Header[] = [
     field: "name",
     width: 200,
     type: "text",
-    readonly: true,
+    readonly: false,
     sortable: false,
     pinneable: false,
+    rules: [
+      (v) => !!v || "Email es requerido",
+      (v) => /.+@.+\..+/.test(v) || "Email inválido",
+    ],
   },
   {
     title: "Calificacion de Cuaderno",
@@ -180,7 +184,6 @@ const headers: Header[] = [
     width: 120,
     type: "number",
     readonly: false,
-    
   },
   {
     title: "D",
