@@ -18,6 +18,7 @@ import TableHeader from "./TableHeader.vue";
 export interface LernizTableProps<
   T extends Record<string, string | number | null>
 > {
+  autoselect?: boolean;
   items: T[];
   headers: Header[];
   editCells?: boolean;
@@ -30,6 +31,9 @@ const emit = defineEmits(["change", "delete", "edit"]);
 const props = defineProps<LernizTableProps<T>>();
 const itemHeight = 35;
 
+const autoselect = computed(() => {
+  return props.autoselect || true;
+});
 const hoveredRowIndex = ref(-1);
 const selectedRow = ref(-1);
 const selectedCol = ref(-1);
@@ -350,7 +354,7 @@ const setFocus = () => {
   if (!element) return console.log("Input no definido");
 
   element.focus();
-  if (element instanceof HTMLInputElement) element.select();
+  if (element instanceof HTMLInputElement && autoselect.value) element.select();
 };
 
 const enterSelected = (row: number, col: number) => {
@@ -404,8 +408,6 @@ function handleRowContextMenu(event: MouseEvent, rowIndex: number, item: any) {
   contextMenuPosition.value = { x: event.clientX, y: event.clientY };
   contextMenuVisible.value = true;
 }
-
-
 
 function handleClickOutside(event: MouseEvent) {
   const target = event.target as HTMLElement;
@@ -748,11 +750,9 @@ const toggleDarkMode = () => {
         top: contextMenuPosition.y + 'px',
       }"
     >
-    
       <slot
         name="context-menu-items"
         :row="sortedItems[contextMenuRowIndex]"
-        
       ></slot>
     </div>
   </div>
